@@ -50,11 +50,15 @@ function SimilarCard(movie:SimilarCardProps) {
             className={`drop-shadow-xl w-full h-[11rem] lg:h-[19rem]`}
           >
             <Image
-              src={`https://image.tmdb.org/t/p/w342/${movie.poster_path}`}
-              layout="fill"
-              objectFit="cover"
+              src={
+                movie.poster_path
+                  ? `https://image.tmdb.org/t/p/w342/${movie.poster_path}`
+                  : 'https://via.placeholder.com/342x513'
+              }
+              alt={movie.title || movie.name || 'Movie poster'}
+              fill={true}
+              style={{ objectFit: 'cover' }}
               unoptimized={true}
-             
             />
           </div>
 
