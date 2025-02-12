@@ -68,7 +68,7 @@ function DetailContainer(data: DetailContainerProps) {
 
   const fetchTrailer = async () => {
     try {
-      let url = `https://api.themoviedb.org/3/${data?.media_type}/${id}/videos?api_key=cfe422613b250f702980a3bbf9e90716`;
+      let url = `https://api.themoviedb.org/3/${data?.media_type}/${id}/videos?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`;
       let req = await fetch(url);
       let res = await req.json();
       
