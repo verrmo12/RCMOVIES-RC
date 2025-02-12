@@ -113,12 +113,11 @@ function HomeCard(movie: CardProps) {
                 src={
                   movie.poster_path
                     ? `https://image.tmdb.org/t/p/w342/${movie.poster_path}`
-                    : movie.profile_path
-                    ? `https://image.tmdb.org/t/p/w500/${movie.profile_path}`
-                    : "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png"
+                    : 'https://via.placeholder.com/342x513'
                 }
-                layout="fill"
-                objectFit="cover"
+                alt={movie.title || movie.name || 'Movie poster'}
+                fill={true}
+                style={{ objectFit: 'cover' }}
                 priority={true}
                 unoptimized={true}
               />
