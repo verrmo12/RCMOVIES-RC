@@ -10,6 +10,7 @@ import {useState} from "react"
 import { AnimatePresence } from "framer-motion";
 import { ToastContainer, toast, Flip } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Analytics } from '@vercel/analytics/react'
 
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -45,6 +46,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         
       </div>
       <Footer />
+      <Analytics />
       </PersistGate>
     </Provider>
   );
