@@ -1,327 +1,238 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import Card from "./Card";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import { BiCaretRight } from "react-icons/bi";
-import HomeCard from "./HomeCard";
-import { AnimatePresence } from "framer-motion";
-import CardModal from "./CardModal";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import ContinueWatchingCard from "./ContinueWatchingCard";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { Navigation, Pagination, Grid } from "swiper/modules";
+"use client"
 
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/effect-coverflow";
-import "swiper/css/pagination";
-// @ts-ignore
+import { type Dispatch, type SetStateAction, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { useRouter } from "next/router"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Navigation } from "swiper/modules"
+import { ChevronLeft, ChevronRight, Film, Tv } from "lucide-react"
 
-import { EffectCoverflow, Autoplay } from "swiper/modules";
+// Components
+import CardModal from "./CardModal"
+import HomeCard from "./HomeCard"
+import ContinueWatchingCard from "./ContinueWatchingCard"
 
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-// @ts-ignore
-
-import "swiper/css";
-import "swiper/css/autoplay";
-import { isMobile } from "@oplayer/core";
+// Swiper styles
+import "swiper/css"
+import "swiper/css/navigation"
 
 interface HomeContainerProps {
-  Data: [];
-  heading: string;
-  setTypeMovies?: Dispatch<SetStateAction<any>>;
-  setTypeTV?: Dispatch<SetStateAction<any>>;
-  swiperId: any;
+  Data: any[]
+  heading: string
+  setTypeMovies?: Dispatch<SetStateAction<any>>
+  setTypeTV?: Dispatch<SetStateAction<any>>
+  swiperId: any
 }
 
-function HomeContainer(data: HomeContainerProps): any {
-  const sliderRef = useRef<any>(null);
-  const [selected, setSelected] = useState(false);
-  const [cardId, setCardId] = useState(null);
-  const [state, setState] = useState<any>(0);
-  const router = useRouter();
-  console.log(state);
-  const next = () => {
-    sliderRef?.current?.slickNext();
-  };
-  const previous = () => {
-    sliderRef?.current?.slideTo(1);
-  };
-
-  const beforeChange = (prev: any, next: any) => {
-    setState(next);
-  };
-
-  const NextArrow: any = () => {
-    return (
-      state < 10 && (
-        <div
-          id="next"
-          className="hidden lg:flex absolute cursor-pointer transition-all duration-300 ease-in-out top-0 right-0 h-full  items-center px-1 bg-[#00000085] z-50"
-          onClick={next}
-        >
-          <FaChevronRight size={30} />
-        </div>
-      )
-    );
-  };
-
-  const PrevArrow: any = () => {
-    return (
-      state > 0 && (
-        <div
-          id="prev"
-          className="hidden lg:flex absolute cursor-pointer transition-all duration-300 ease-in-out top-0 left-0 h-full  items-center px-1 bg-[#00000085] z-50"
-          onClick={previous}
-        >
-          <FaChevronLeft size={30} />
-        </div>
-      )
-    );
-  };
+function HomeContainer(data: HomeContainerProps): JSX.Element {
+  const [selected, setSelected] = useState(false)
+  const [cardId, setCardId] = useState(null)
+  const router = useRouter()
 
   const handleClick = () => {
-    setSelected(false);
-  };
-  const handleSelected = () => {
-    setSelected(!selected);
-  };
-  const handleSimilar = () => {
-    setSelected(false);
-  };
+    setSelected(false)
+  }
 
-  const breakpoints = () => {
-    return {
-      300: {
-        slidesPerView: data.heading === "Continue Watching" ? 1.5 : data.heading === "Casts" ? 2.5 : 2.5,
-        spaceBetween: 10,
-      },
-      480: {
-        slidesPerView: data.heading === "Continue Watching" ? 2 : data.heading === "Casts" ? 3.3 : 3.5,
-        spaceBetween: 10,
-      },
-      640: {
-        slidesPerView: data.heading === "Continue Watching" ? 2 : data.heading === "Casts" ? 3.7 : 4.2,
-        spaceBetween: 10,
-        speed: 500,
-      },
-      720: {
-        slidesPerView: data.heading === "Continue Watching" ? 2.6 : 4,
-        spaceBetween: 10,
-        speed: 500,
-      },
-      1024: {
-        slidesPerView: data.heading === "Continue Watching" ? 4 : 4.7,
-        spaceBetween: 10,
-        slidesPerGroup: 3,
-        speed: 500,
-      },
-      1200: {
-        slidesPerView: data.heading === "Continue Watching" ? 4.5 : 6,
-        spaceBetween: 10,
-        slidesPerGroup: 3,
-        speed: 500,
-      },
-      1424: {
-        slidesPerView: data.heading === "Continue Watching" ? 5 : 6.5,
-        spaceBetween: 10,
-        slidesPerGroup: 3,
-        speed: 500,
-      },
-      1624: {
-        slidesPerView: data.heading === "Continue Watching" ? 5.5 : 7,
-        slidesPerGroup: 3,
-        spaceBetween: 10,
-        speed: 500,
-      },
-      1800: {
-        slidesPerView: data.heading === "Continue Watching" ? 6.2 : 8.7,
-        slidesPerGroup: 3,
-        spaceBetween: 10,
-        speed: 500,
-      },
-      2030: {
-        slidesPerView: data.heading === "Continue Watching" ? 7 : 9.1,
-        slidesPerGroup: 3,
-        spaceBetween: 10,
-        speed: 500,
-      },
-      2450: {
-        slidesPerView: data.heading === "Continue Watching" ? 7.5 : 10.5,
-        slidesPerGroup: 3,
-        spaceBetween: 10,
-        speed: 500,
-      },
-    };
-  };
+  const handleSimilar = () => {
+    setSelected(false)
+  }
+
+  const isContinueWatching = data.heading === "Continue Watching"
+  const isCasts = data.heading === "Casts"
+
+  const isToggleableSection =
+    data.heading.includes("Popular") ||
+    data.heading.includes("Trending") ||
+    data.heading.includes("Top") ||
+    data.heading.includes("Comedy")
+
+  const isMoviesActive =
+    data.heading === "Trending Movies" ||
+    data.heading === "Popular Movies" ||
+    data.heading === "Top Rated Movies" ||
+    data.heading === "Comedy Movies"
+
+  const isShowsActive =
+    data.heading === "Trending Shows" ||
+    data.heading === "Popular Shows" ||
+    data.heading === "Top Rated Shows" ||
+    data.heading === "Comedy Shows"
+
+  // Get base heading without "Movies" or "Shows" suffix
+  const getBaseHeading = () => {
+    if (data.heading.includes("Movies") || data.heading.includes("Shows")) {
+      return data.heading.split(" ").slice(0, -1).join(" ")
+    }
+    return data.heading
+  }
+
+  // Swiper breakpoints for Continue Watching section
+  const breakpoints = {
+    300: {
+      slidesPerView: 1.5,
+      spaceBetween: 10,
+    },
+    480: {
+      slidesPerView: 2,
+      spaceBetween: 10,
+    },
+    640: {
+      slidesPerView: 2.5,
+      spaceBetween: 10,
+    },
+    768: {
+      slidesPerView: 3,
+      spaceBetween: 10,
+    },
+    1024: {
+      slidesPerView: 4,
+      spaceBetween: 10,
+    },
+    1280: {
+      slidesPerView: 5,
+      spaceBetween: 10,
+    },
+    1536: {
+      slidesPerView: 6,
+      spaceBetween: 10,
+    },
+  }
+
+  if (!data?.Data?.length) {
+    return <></>
+  }
 
   return (
-    data?.Data?.length > 0 && (
-      <>
-        <AnimatePresence>
-          {selected && (
-            <CardModal
-              {...data}
-              handleClick={handleClick}
-              handleSimilar={handleSimilar}
-              id={cardId}
-            />
-          )}
-        </AnimatePresence>
-        <div className="w-full relative overflow-hidden px-1 lg:px-6 my-4">
-          <div className="p-2 flex justify-between items-center">
-            <h1 className="text-lg lg:text-2xl lg:font-bold ">
-              {data.heading}
-            </h1>
-            {data.heading.includes("Popular") ||
-            data.heading.includes("Trending") ||
-            data.heading.includes("Top") ||
-            data.heading.includes("Comedy") ? (
-              <div
-                onClick={() => sliderRef?.current.swiper.slideTo(0)}
-                className="flex gap-1"
-              >
-                <div
-                  onClick={data.setTypeMovies}
-                  className={`${
-                    data.heading == "Trending Movies" ||
-                    data.heading == "Popular Movies" ||
-                    data.heading == "Top Rated Movies" ||
-                    data.heading == "Comedy Movies"
-                      ? "bg-[#4815ff] font-semibold"
-                      : "bg-neutral-900 hover:bg-neutral-800"
-                  }  py-2 px-3 lg:py-2 lg:px-4  rounded-sm drop-shadow-xl cursor-pointer delay-400 hover:scale-105  transition-all`}
-                >
-                  Movies
-                </div>
-                <div
-                  onClick={data.setTypeTV}
-                  className={`${
-                    data.heading == "Trending Shows" ||
-                    data.heading == "Popular Shows" ||
-                    data.heading == "Top Rated Shows" ||
-                    data.heading == "Comedy Shows"
-                      ? "bg-[#4815ff] font-semibold"
-                      : "bg-neutral-900"
-                  }   rounded-sm drop-shadow-xl py-2 px-3 lg:py-2 lg:px-4   cursor-pointer  hover:bg-neutral-800 hover:scale-105  transition-all`}
-                >
-                  Tv Shows
+    <>
+      <AnimatePresence>
+        {selected && <CardModal {...data} handleClick={handleClick} handleSimilar={handleSimilar} id={cardId} />}
+      </AnimatePresence>
+
+      <section className="w-full relative px-6 md:px-10 lg:px-16 py-10 mb-6">
+        <div className="mb-8">
+          {isToggleableSection ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-200">{getBaseHeading()}</h2>
+
+                <div className="flex gap-2 items-center">
+                  <button
+                    onClick={data.setTypeMovies}
+                    className={`py-1.5 px-3 rounded text-sm font-medium transition-all duration-300 hover:scale-105 flex items-center gap-1.5 ${
+                      isMoviesActive
+                        ? "bg-violet-700 text-white"
+                        : "bg-[rgb(30,30,30)] text-gray-300 hover:bg-[rgb(40,40,40)]"
+                    }`}
+                  >
+                    <Film size={16} />
+                    <span>Movies</span>
+                  </button>
+                  <button
+                    onClick={data.setTypeTV}
+                    className={`py-1.5 px-3 rounded text-sm font-medium transition-all duration-300 hover:scale-105 flex items-center gap-1.5 ${
+                      isShowsActive
+                        ? "bg-violet-700 text-white"
+                        : "bg-[rgb(30,30,30)] text-gray-300 hover:bg-[rgb(40,40,40)]"
+                    }`}
+                  >
+                    <Tv size={16} />
+                    <span>TV Shows</span>
+                  </button>
                 </div>
               </div>
-            ) : null}
-          </div>
 
-          <div className=" w-full flex justify-between items-center mt-5">
-            <span className={` px-2 flex  $ font-semibold items-end  text-2xl`}>
-              {/* {heading} */}
-            </span>
+              <div className="relative">
+                <span className="block h-1 w-16 bg-violet-700 rounded-full"></span>
+              </div>
 
-            {/* <div className="flex items-center gap-[2px] mx-1 p-2.5">
-              <button className="prev" id={`swiper-back-${data.swiperId}`}>
-                <FaChevronLeft width={24} />
-              </button>
-              <button className="next" id={`swiper-forward-${data.swiperId}`}>
-                <FaChevronRight width={24} />
-              </button>
-            </div> */}
-          </div>
-
-          {data.heading == "Continue Watching" ? (
-            <Swiper
-              ref={sliderRef}
-              className="slidecard watchcard"
-              grabCursor={true}
-              speed={900}
-              spaceBetween={5} // Add space between slides
-              navigation={{
-                nextEl: `#swiper-forward-${data.swiperId}`,
-                prevEl: `#swiper-back-${data.swiperId}`,
-              }}
-              breakpoints={breakpoints()}
-        
-              pagination={{
-                clickable: true,
-              }}
-              modules={[Navigation]}
-              // onSlideChange={handleSlideChange}
-            >
-              {data?.Data?.map((item: any, index) => (
-                <SwiperSlide
-                  key={item}
-                  className=" max-h-[500px]"
-                  onClick={() => router.push(`/${item.media_type}/${item.id}`)}
-                >
-                  <ContinueWatchingCard {...item} heading={data.heading} />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          ) : (
-            //   <Slider {...settings}  ref={sliderRef} className="slidecard">
-            //   {data?.Data?.map((item: any, index) => (
-            //     <div key={index} onClick={() => {
-            //       setCardId(item.id);
-            //       setSelected(!selected)
-            //     }}>
-
-            //         <HomeCard  {...item} heading={data.heading}  />
-
-            //     </div>
-
-            //   ))}
-            // </Slider>
-            <Swiper
-              ref={sliderRef}
-              className="slidecard"
-              speed={900}
-              breakpoints={breakpoints()}
-              navigation={{
-                nextEl: `#swiper-forward-${data.swiperId}`,
-                prevEl: `#swiper-back-${data.swiperId}`,
-              }}
-              pagination={{
-                clickable: true,
-              }}
-              spaceBetween={10}
-              slidesPerView={2}
-              
-              modules={[Navigation]}
-              // onSlideChange={handleSlideChange}
-            >
-              <div className="flex items-center justify-between absolute inset-0 max-h-[200px] lg:max-h-[320px] ">
-              <button className="prev absolute left-0 z-50  w-10 flex items-center justify-center  h-full" id={`swiper-back-${data.swiperId}`}>
-                <FaChevronLeft width={32} />
-              </button>
-              <button className="next z-50  absolute right-0 w-10 flex items-center justify-center  h-full"  id={`swiper-forward-${data.swiperId}`}>
-                <FaChevronRight width={32} />
-              </button>
+              <p className="text-gray-400 max-w-3xl">
+                {isMoviesActive && "Discover the best movies selected for you to enjoy."}
+                {isShowsActive && "Explore top TV shows curated for your entertainment."}
+              </p>
             </div>
-              {data?.Data?.map((item: any, index) => (
-                <SwiperSlide
-                  key={item}
-                  className=" max-h-[500px]"
-                  onClick={() => {
-                    setCardId(item.id);
-                    setSelected(!selected);
-                  }}
-                >
-                  <HomeCard {...item} heading={data.heading} />
+          ) : (
+            <div className="flex flex-col gap-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-200">{data.heading}</h2>
+
+              <div className="relative">
+                <span className="block h-1 w-16 bg-violet-700 rounded-full"></span>
+              </div>
+
+              <p className="text-gray-400 max-w-3xl">
+                {isContinueWatching && "Pick up where you left off with your recent watches."}
+                {isCasts && "Popular actors and actresses from your favorite content."}
+                {!isContinueWatching && !isCasts && "Explore our collection of entertainment content."}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {isContinueWatching ? (
+          // Continue Watching section with Swiper
+          <div className="relative px-2">
+            <Swiper
+              className="continue-watching-swiper"
+              grabCursor={true}
+              speed={600}
+              navigation={{
+                nextEl: `.swiper-button-next-${data.swiperId}`,
+                prevEl: `.swiper-button-prev-${data.swiperId}`,
+              }}
+              breakpoints={breakpoints}
+              modules={[Navigation]}
+            >
+              {data?.Data?.map((item: any, index: number) => (
+                <SwiperSlide key={item.id || index} className="h-auto">
+                  <div
+                    className="cursor-pointer transition-transform duration-300 hover:scale-105"
+                    onClick={() => router.push(`/${item.media_type}/${item.id}`)}
+                  >
+                    <ContinueWatchingCard {...item} heading={data.heading} />
+                  </div>
                 </SwiperSlide>
               ))}
+
+              <button
+                className={`swiper-button-prev-${data.swiperId} absolute top-1/2 -translate-y-1/2 left-0 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors`}
+              >
+                <ChevronLeft className="text-white" size={24} />
+              </button>
+              <button
+                className={`swiper-button-next-${data.swiperId} absolute top-1/2 -translate-y-1/2 right-0 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors`}
+              >
+                <ChevronRight className="text-white" size={24} />
+              </button>
             </Swiper>
-          )}
-        </div>{" "}
-      </>
-    )
-  );
+          </div>
+        ) : (
+          // Grid layout for other sections
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 px-2`}
+          >
+            {data?.Data?.map((item: any, index: number) => (
+              <motion.div
+                key={item.id || index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="cursor-pointer transition-transform duration-300 hover:scale-105 hover:z-10"
+                onClick={() => {
+                  setCardId(item.id)
+                  setSelected(!selected)
+                }}
+              >
+                <HomeCard {...item} heading={data.heading} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </section>
+    </>
+  )
 }
 
-export default HomeContainer;
+export default HomeContainer
+

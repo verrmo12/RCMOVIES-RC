@@ -1,145 +1,85 @@
-import { AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import CardModal from "./CardModal";
-import { BsPlayCircle } from "react-icons/bs";
-import { useRouter } from "next/router";
+"use client"
 
-interface CardProps {
-  name: string;
-  poster_path: string;
-  type?: string;
-  url?: string;
-  duration?: string;
-  vote_average: string;
-  id: string;
-  heading: string;
-  title: string;
-  media_type: string;
-  overview: string;
-  backdrop_path: string;
-  profile_path: string;
-  character: string;
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { Play, Star } from "lucide-react"
+import Image from "next/image"
+
+interface HomeCardProps {
+  poster_path?: string
+  profile_path?: string
+  title?: string
+  name?: string
+  vote_average?: number
+  release_date?: string
+  first_air_date?: string
+  heading?: string
 }
 
-function HomeCard(movie: CardProps) {
-  const { CurrentState, ContinueWatching } = useSelector((state: any) => state);
-  const [selected, setSelected] = useState(false);
-  const router = useRouter();
+function HomeCard(props: HomeCardProps) {
+  const [isHovered, setIsHovered] = useState(false)
 
-  const dataState: any = { ep_num: 1, season: 1, ep_name: "Episode 1" };
+  const isCast = props.heading === "Casts"
+  const imagePath = isCast ? props.profile_path : props.poster_path
+  const title = props.title || props.name || "Untitled"
+  const year = props.release_date?.split("-")[0] || props.first_air_date?.split("-")[0]
 
-  ContinueWatching?.filter((item: any) => {
-    if (item.id == movie.id) {
-      dataState["ep_name"] = item.episode_name;
-      dataState["episode_image"] = item.episode_image;
-    }
-  });
-  CurrentState?.filter((item: any) => {
-    if (item.id == movie.id) {
-      dataState["ep_num"] = item.episode_number;
-      dataState["season"] = item.season_number;
-      dataState["ep_name"] = item.episode_name;
-    }
-  });
-  const handleClick = () => {
-    setSelected(false);
-  };
-  const handleSelected = () => {
-    setSelected(!selected);
-  };
-  const handleSimilar = () => {
-    setSelected(false);
-  };
   return (
-    <>
-      {/* <AnimatePresence>
-        {selected && (
-          <CardModal
-            {...movie}
-            handleClick={handleClick}
-            handleSimilar={handleSimilar}
-          />
+    <div
+      className="relative overflow-hidden rounded-lg transition-all duration-300"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative aspect-[2/3] overflow-hidden rounded-lg">
+        {/* Image */}
+        <Image
+          src={imagePath ? `https://image.tmdb.org/t/p/w500/${imagePath}` : "/placeholder.svg?height=450&width=300"}
+          alt={title}
+          width={300}
+          height={450}
+          className="w-full h-full object-cover transition-transform duration-500"
+          style={{
+            transform: isHovered ? "scale(1.05)" : "scale(1)",
+          }}
+        />
+
+        {/* Overlay on hover */}
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/60 flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="bg-violet-700 rounded-full p-3 cursor-pointer hover:bg-violet-600 transition-colors"
+            >
+              <Play size={24} className="fill-white text-white" />
+            </motion.div>
+          </motion.div>
         )}
-      </AnimatePresence> */}
 
-      {movie.heading === "Continue Watching" ? (
-        
-          <>
-          
-            <div
-              style={{
-                backgroundImage: `url(https://image.tmdb.org/t/p/w780//${movie?.backdrop_path}) `,
-                backgroundSize: "cover",
-
-                width: "100%",
-                height: "184px",
-                boxShadow:
-                  "rgb(6 6 6) 0px 11px 0px -10px inset, rgb(6 6 6) 0px -70px 50px -10px inset",
-              }}
-            >
-              {" "}
-              <span className="h-full flex items-center justify-center brightness-75">
-                <BsPlayCircle size={50} color="white" />
-              </span>
-            </div>
-            
-
-            <div>
-              <h1 className="font-normal text-center  text-md lg:text-1xl whitespace-normal pb-[5px] overflow-hidden pt-1 text-ellipsis flex justify-start items-center">
-                {movie.name || movie.title}
-              </h1>
-              {movie.media_type === "tv" && (
-                <p className=" text-[#a8a6a6] text-sm pb-[5px]	">
-                  S{dataState.season}, E{dataState.ep_num}: {dataState.ep_name}
-                </p>
-              )}
-            </div>
-          </>
-        
-      ) : (
-        <div
-          onClick={handleSelected}
-          className="flex flex-col gap-2  rounded-b-lg  cursor-pointer hover:brightness-75  ease-out relative hover:drop-shadow-xl transition-transform duration-500"
-        >
-          <div className="">
-            <div
-              className={`drop-shadow-xl w-[142px] md:w-full
-             h-[12.3rem]  md:h-[320px]`}
-            >
-              <Image
-                src={
-                  movie.poster_path
-                    ? `https://image.tmdb.org/t/p/w342/${movie.poster_path}`
-                    : 'https://via.placeholder.com/342x513'
-                }
-                alt={movie.title || movie.name || 'Movie poster'}
-                fill={true}
-                style={{ objectFit: 'cover' }}
-                priority={true}
-                unoptimized={true}
-              />
-            </div>
-
-            <div className="">
-              {movie.heading === "Casts" && (
-                <>
-                  <h1 className="font-normal text-center  text-md lg:text-1xl whitespace-normal pb-[5px] overflow-hidden pt-1 text-ellipsis flex justify-start items-center">
-                    {movie.name || movie.title}
-                  </h1>
-                  <p className=" text-[#a8a6a6] text-sm pb-[5px]	">
-                    {movie.character}
-                  </p>
-                </>
-              )}
-            </div>
+        {/* Rating badge */}
+        {props.vote_average && (
+          <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+            <Star size={12} className="text-yellow-400 fill-yellow-400" />
+            <span className="text-white text-xs font-medium">{props.vote_average.toFixed(1)}</span>
           </div>
-        </div>
-      )}
-    </>
-  );
+        )}
+      </div>
+
+      {/* Title and year */}
+      <div className="mt-2 px-1">
+        <h3 className="text-gray-200 font-medium text-sm truncate">{title}</h3>
+        {year && <p className="text-gray-400 text-xs">{year}</p>}
+      </div>
+    </div>
+  )
 }
 
-export default HomeCard;
+export default HomeCard
+

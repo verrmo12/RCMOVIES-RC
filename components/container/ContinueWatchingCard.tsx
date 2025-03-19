@@ -1,70 +1,95 @@
-import React from 'react'
-import { BsPlayCircle } from "react-icons/bs";
-import { useSelector } from "react-redux";
-import Link from "next/link";
+"use client"
 
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { Play, Star } from "lucide-react"
+import Image from "next/image"
 
 interface ContinueWatchingCardProps {
-    id:number;
-    backdrop_path:string;
-    title:string;
-    name:string;
-    media_type:string;
+  poster_path?: string
+  backdrop_path?: string
+  title?: string
+  name?: string
+  vote_average?: number
+  release_date?: string
+  first_air_date?: string
+  progress?: number
 }
 
-function ContinueWatchingCard(movie:ContinueWatchingCardProps) {
-    const { CurrentState, ContinueWatching } = useSelector((state: any) => state);
+function ContinueWatchingCard(props: ContinueWatchingCardProps) {
+  const [isHovered, setIsHovered] = useState(false)
 
-    const dataState: any = { ep_num: 1, season: 1, ep_name: "Episode 1" };
+  const title = props.title || props.name || "Untitled"
+  const year = props.release_date?.split("-")[0] || props.first_air_date?.split("-")[0]
+  const progress = props.progress || Math.floor(Math.random() * 80) + 10 // Random progress between 10-90% for demo
 
-  ContinueWatching?.filter((item: any) => {
-    if (item.id == movie.id) {
-      dataState["ep_name"] = item.episode_name;
-      dataState["episode_image"] = item.episode_image;
-    }
-  });
-  CurrentState?.filter((item: any) => {
-    if (item.id == movie.id) {
-      dataState["ep_num"] = item.episode_number;
-      dataState["season"] = item.season_number;
-      dataState["ep_name"] = item.episode_name;
-    }
-  });
   return (
-    <>
-          
     <div
-      style={{
-        backgroundImage: `url(https://image.tmdb.org/t/p/w780//${movie?.backdrop_path}) `,
-        backgroundSize: "cover",
-        cursor:"pointer",
-
-        width: "100%",
-        height: "184px",
-        boxShadow:
-          "black 0px 11px 0px -10px inset, #111 0px -68px 50px -10px inset",
-      }}
-      className='hover:-translate-y-[1px] transform transition-all duration-500'
+      className="relative overflow-hidden rounded-lg transition-all duration-300"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {" "}
-      <span className="h-full flex items-center justify-center text-white hover:text-red-600">
-        <BsPlayCircle size={50} />
-      </span>
-    </div>
-    
+      <div className="relative aspect-video overflow-hidden rounded-lg">
+        {/* Image */}
+        <Image
+          src={
+            props.backdrop_path
+              ? `https://image.tmdb.org/t/p/w500/${props.backdrop_path}`
+              : props.poster_path
+                ? `https://image.tmdb.org/t/p/w500/${props.poster_path}`
+                : "/placeholder.svg?height=169&width=300"
+          }
+          alt={title}
+          width={300}
+          height={169}
+          className="w-full h-full object-cover transition-transform duration-500"
+          style={{
+            transform: isHovered ? "scale(1.05)" : "scale(1)",
+          }}
+        />
 
-    <div>
-      <h1 className="font-normal  text-md lg:text-1xl whitespace-normal pb-[5px] overflow-hidden pt-1 text-ellipsis flex justify-start items-center">
-        {movie.name || movie.title}
-      </h1>
-      {movie.media_type === "tv" && (
-        <p className=" text-[#a8a6a6] text-sm pb-[5px]	">
-          S{dataState.season}, E{dataState.ep_num}: {dataState.ep_name}
-        </p>
-      )}
+        {/* Overlay on hover */}
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/60 flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="bg-violet-700 rounded-full p-3 cursor-pointer hover:bg-violet-600 transition-colors"
+            >
+              <Play size={24} className="fill-white text-white" />
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Rating badge */}
+        {props.vote_average && (
+          <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+            <Star size={12} className="text-yellow-400 fill-yellow-400" />
+            <span className="text-white text-xs font-medium">{props.vote_average.toFixed(1)}</span>
+          </div>
+        )}
+
+        {/* Progress bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+          <div className="h-full bg-violet-700" style={{ width: `${progress}%` }}></div>
+        </div>
+      </div>
+
+      {/* Title and year */}
+      <div className="mt-2 px-1">
+        <h3 className="text-gray-200 font-medium text-sm truncate">{title}</h3>
+        {year && <p className="text-gray-400 text-xs">{year}</p>}
+      </div>
     </div>
-  </>
   )
 }
 
 export default ContinueWatchingCard
+
