@@ -1,57 +1,62 @@
-import NavbarItem from "./Navbaritems";
+"use client"
 
-import { BsChevronDown, BsSearch, BsBell } from 'react-icons/bs';
-import MobileMenu from "./MobileMenu";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react"
 import { useRouter } from "next/router"
+import Link from "next/link"
+import { AnimatePresence, motion } from "framer-motion"
 
+// Components
+import NavbarItem from "./Navbaritems"
+import MobileMenu from "./MobileMenu"
+import Search from "./Search"
 
-import { AnimatePresence, motion } from "framer-motion";
-import Backdrop from "../Backdrop";
-import Link from "next/link";
-import { AiFillHome, AiFillFire } from "react-icons/ai";
-import { SiBarclays } from "react-icons/si";
-import { RiMovieFill } from "react-icons/ri";
-import { FaSlackHash } from "react-icons/fa";
-import { MdBookmark } from "react-icons/md";
-import Search from "./Search";
-import { FaBars } from "react-icons/fa";
-import GenreMenu from "./GenreMenu";
-import Image from 'next/image'
-
-const TOP_OFFSET = 66;
+// Icons
+import { ChevronDown, Menu, Film, Tv, Star, Bookmark, Home, Hash } from "lucide-react"
 
 interface SideBarprops {
-  handleSideNav: any;
+  handleSideNav: any
 }
-function Sidebar(t: SideBarprops) {
 
-  const [tran, setTran] = useState(true);
-  const [scrollPosition, setScrollPosition] = useState(0);
+function Navbar(t: SideBarprops) {
+  const [scrollPosition, setScrollPosition] = useState(0)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [showMovieCategory, setShowMovieCategory] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    const handleScroll = () => {
+      const position = window.pageYOffset
+      setScrollPosition(position)
+    }
 
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
 
-  const handleScroll = () => {
-    const position = window.pageYOffset;
-    setScrollPosition(position);
-  };
+  const toggleMobileMenu = useCallback(() => {
+    setShowMobileMenu((current) => !current)
+  }, [])
 
-  const router = useRouter();
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [active, setActive] = useState(false);
-  const [showMovieCategory, setShowMovieCategory] = useState(false)
+  const handleMovieCategory = (e: any) => {
+    e.stopPropagation()
+    setShowMovieCategory(!showMovieCategory)
+  }
 
-   const toggleMobileMenu = useCallback(() => {
-        setShowMobileMenu((current) => !current);
-    }, [])
+  // Close category menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showMovieCategory) setShowMovieCategory(false)
+    }
 
-  const movieCategory:any = [
+    document.addEventListener("click", handleClickOutside)
+    return () => {
+      document.removeEventListener("click", handleClickOutside)
+    }
+  }, [showMovieCategory])
+
+  const movieCategory = [
     { name: "Horror", link: "/genre/Horror-27/1" },
     { name: "Action", link: "/genre/Action-28/1" },
     { name: "Comedy", link: "/genre/Comedy-35/1" },
@@ -68,105 +73,132 @@ function Sidebar(t: SideBarprops) {
     { name: "War", link: "/genre/War-10752/1" },
   ]
 
-
-
-
-const handleMovieCategory = (e:any) => {
-  e.stopPropagation()
-  setShowMovieCategory(!showMovieCategory)
-
-
-}
-  console.log(router.query);
-  console.log(router.asPath);
   return (
-    <header className={`${scrollPosition > 50 ? "bg-[#111]" : "bg-transparent"}  p-4  fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ease-in-out  `}>
-            <div className={`
-            px-4 
-            md:px-16 
-            py-6 
-            flex 
-            flex-row 
-            items-center 
-            transition 
-            duration-500 
-            `}>
-        
-        <span>*</span>
-        <Link href={`/`}>
-          <span className="hidden md:block text-white font-bold text-2xl cursor-pointer">
-            RCMOVIES
-          </span>
-        </Link>
+    <header
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ease-in-out ${
+        scrollPosition > 50
+          ? "bg-[rgb(17,17,17)] shadow-lg backdrop-blur-sm bg-opacity-95"
+          : "bg-gradient-to-b from-[rgba(0,0,0,0.7)] to-transparent"
+      }`}
+    >
+      <div className="container mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-violet-500 font-bold text-3xl">RC</span>
+            <span className="hidden md:block text-white font-bold text-2xl">MOVIES</span>
+          </Link>
 
-        <div onClick={toggleMobileMenu} className="lg:hidden flex flex-row items-center gap-2 cursor-pointer relative">
-             <p className="text-white text-sm">Browse</p>
-              <BsChevronDown className="text-white transition" />
-               <MobileMenu visible = {showMobileMenu} />
-            </div>
+          {/* Mobile Menu Toggle */}
+          <div
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleMobileMenu()
+            }}
+            className="lg:hidden flex items-center gap-2 cursor-pointer"
+          >
+            <button className="flex items-center gap-2 bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] px-3 py-1.5 rounded-full transition-colors">
+              <Menu size={18} className="text-white" />
+              <span className="text-white text-sm">Menu</span>
+              <ChevronDown
+                size={16}
+                className={`text-white transition-transform duration-300 ${showMobileMenu ? "rotate-180" : ""}`}
+              />
+            </button>
+            <MobileMenu visible={showMobileMenu} />
+          </div>
 
-            <div
-            className="
-              flex-row
-              ml-8
-              gap-7
-              hidden
-              lg:flex
-            ">
-             
-             <Link href={`/`}>
-                <NavbarItem label="Home" />
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-6">
+            <Link href="/" className="nav-link">
+              <NavbarItem label="Home" icon={<Home size={16} />} />
             </Link>
 
-                
-           
-               <div  onClick={handleMovieCategory}>
-              {" "}
-              <NavbarItem label="Category" />{" "}       
-            </div>
-            
-            {showMovieCategory && (
-
-
-            <motion.div initial={{y:-200}} animate={{y:0}} exit={{opacity:0}} className="grid grid-cols-2 px-2">
-            {movieCategory.map((cat:any,index:number) => (
-              <Link key={index} href={cat.link}>
-              <span className="p-2 cursor-pointer  text-gray-400 hover:text-gray-200">{cat.name}</span>
-              </Link>
-            ))}
-            </motion.div>
-            )}
-            
-                <Link href={`/movies/1`}>
-                <NavbarItem label="Movies" />
-                </Link>
-
-                <Link href={`/tvshows/1`}>
-                <NavbarItem label="Tv-Shows" />
-                </Link>
-
-                <Link href={`/topimdb/1`}>
-                <NavbarItem label="Top Rated" />
-                </Link>
-
-                <Link href={`/movies-list`}>
-                <NavbarItem label="My List" />
-                </Link>
-       
-
-            </div>
-            <div className="flex flex-row ml-auto gap-7 items-center">
-              <div className="text-gray-200 hover:text-gray-300 cursor-pointer transition">
-                
+            <div className="relative" onClick={handleMovieCategory}>
+              <div className="nav-link">
+                <NavbarItem label="Category" icon={<Hash size={16} />} hasDropdown isOpen={showMovieCategory} />
               </div>
-              <div className="text-gray-200 hover:text-gray-300 cursor-pointer transition">
-                <BsBell/>
-              </div>
-              <Search />
+
+              <AnimatePresence>
+                {showMovieCategory && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 mt-2 bg-[rgb(17,17,17)] border border-gray-800 rounded-lg shadow-xl p-4 w-[500px] z-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="grid grid-cols-3 gap-2">
+                      {movieCategory.map((cat, index) => (
+                        <Link
+                          key={index}
+                          href={cat.link}
+                          className="px-3 py-2 rounded-md hover:bg-violet-700/20 text-gray-300 hover:text-white transition-colors"
+                        >
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            </div>
-        </header>
-  );
+
+            <Link href="/movies/1" className="nav-link">
+              <NavbarItem label="Movies" icon={<Film size={16} />} />
+            </Link>
+
+            <Link href="/tvshows/1" className="nav-link">
+              <NavbarItem label="TV Shows" icon={<Tv size={16} />} />
+            </Link>
+
+            <Link href="/topimdb/1" className="nav-link">
+              <NavbarItem label="Top Rated" icon={<Star size={16} />} />
+            </Link>
+
+            <Link href="/movies-list" className="nav-link">
+              <NavbarItem label="My List" icon={<Bookmark size={16} />} />
+            </Link>
+          </nav>
+        </div>
+
+        {/* Search */}
+        <div className="flex items-center">
+          <Search />
+        </div>
+      </div>
+
+      {/* Global Styles */}
+      <style jsx global>{`
+        .nav-link {
+          position: relative;
+          transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background-color: #8b5cf6;
+          transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+          width: 100%;
+        }
+        
+        .nav-link.active {
+          color: white;
+          font-weight: 400;
+        }
+      `}</style>
+    </header>
+  )
 }
 
-export default Sidebar;
+export default Navbar
+

@@ -1,16 +1,35 @@
-import React from 'react';
+import type React from "react"
+import { ChevronDown } from "lucide-react"
 
 interface NavbarItemProps {
-  label: string;
-  active?: boolean;
+  label: string
+  icon?: React.ReactNode
+  active?: boolean
+  hasDropdown?: boolean
+  isOpen?: boolean
 }
 
-const NavbarItem: React.FC<NavbarItemProps> = ({ label, active }) => {
+const NavbarItem: React.FC<NavbarItemProps> = ({
+  label,
+  icon,
+  active = false,
+  hasDropdown = false,
+  isOpen = false,
+}) => {
   return (
-    <div className={active ? 'text-white cursor-default' : 'text-gray-200 hover:text-gray-300 cursor-pointer transition'}>
-      {label}
+    <div
+      className={`flex items-center gap-1.5 cursor-pointer text-sm font-medium transition-colors ${
+        active ? "text-white" : "text-gray-300 hover:text-white"
+      }`}
+    >
+      {icon && <span className="opacity-80">{icon}</span>}
+      <span>{label}</span>
+      {hasDropdown && (
+        <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+      )}
     </div>
   )
 }
 
-export default NavbarItem;
+export default NavbarItem
+

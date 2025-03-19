@@ -1,73 +1,98 @@
-import Link from "next/link";
-import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
-import { BsSearch } from "react-icons/bs";
+"use client"
 
+import type React from "react"
+
+import { useRouter } from "next/router"
+import { useEffect, useState, useRef } from "react"
+import { SearchIcon, X } from "lucide-react"
 
 function Search() {
-  const [val, setVal] = useState<any>("");
-  const router = useRouter();
+  const [searchValue, setSearchValue] = useState("")
+  const [isExpanded, setIsExpanded] = useState(false)
+  const router = useRouter()
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
 
- 
+  // Handle click outside to collapse search
   useEffect(() => {
-    var SearchBar = document.getElementById("search");
-    var SearchInput:any = document.getElementById("searchinput");
-    document.addEventListener("click", function (event:any) {
-      var isClickInside = SearchBar?.contains(event.target);
-
-      if (!isClickInside) {
-        SearchInput.style.maxWidth = 0;
-        SearchInput.style.marginLeft = 0;
-        
-        setVal("");
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsExpanded(false)
+        setSearchValue("")
       }
-    });
-  }, []);
-  
-
-  const handleChange = (e:any) => {
-    if(e.target.value.length > 2 ) {
-        setVal(e.target.value);
-        router.push(`/search/${val}/1`)
-
-    
-    }else if (e.target.value.length < 1) {
-      
-        router.push("/");
     }
-    
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  // Focus input when expanded
+  useEffect(() => {
+    if (isExpanded && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [isExpanded])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchValue(value)
+
+    if (value.length > 2) {
+      router.push(`/search/${value}/1`)
+    } else if (value.length < 1) {
+      router.push("/")
+    }
   }
 
-  const handleClick = () => {
-    var SearchBar:any = document.getElementById("search");
-    var SearchInput:any = document.getElementById("searchinput");
-    SearchInput.focus();
-    SearchInput.style.maxWidth = "800px";
-    SearchInput.style.marginLeft = "0.7rem";
-    SearchBar.style.width = "auto";
-  };
+  const handleSearchClick = () => {
+    setIsExpanded(true)
+  }
+
+  const clearSearch = () => {
+    setSearchValue("")
+    setIsExpanded(false)
+    router.push("/")
+  }
 
   return (
-    <div className="cursor-pointer right-0">
+    <div
+      ref={searchContainerRef}
+      className={`relative flex items-center ${isExpanded ? "bg-[rgba(255,255,255,0.1)]" : ""} rounded-full transition-all duration-300`}
+    >
       <div
-        className={` text-white h-10 w-10  rounded-full flex items-center p-2.5 shadow-2xl relative right-0`}
-        id="search"
-        onClick={handleClick}
+        className={`
+          flex items-center cursor-pointer
+          ${isExpanded ? "pr-2" : "p-2 hover:bg-[rgba(255,255,255,0.1)]"}
+          rounded-full transition-all duration-300
+        `}
+        onClick={handleSearchClick}
       >
-        <BsSearch size={17} strokeWidth={2} />
+        <SearchIcon size={18} className="text-gray-300 min-w-[18px]" />
+
         <input
-          
+          ref={searchInputRef}
           type="text"
-          autoComplete={"off"}
+          value={searchValue}
           onChange={handleChange}
-          className={`text-white bg-transparent border-none outline-none max-w-0 ease-in-out transition-all duration-700`}
-          placeholder="Enter your keywords..."
-          id="searchinput"
+          className={`
+            bg-transparent border-none outline-none text-white text-sm
+            transition-all duration-300 placeholder:text-gray-400
+            ${isExpanded ? "w-[180px] md:w-[220px] ml-2" : "w-0 ml-0"}
+          `}
+          placeholder="Search movies, shows..."
         />
-       
+
+        {isExpanded && searchValue && (
+          <button onClick={clearSearch} className="p-1 hover:bg-[rgba(255,255,255,0.1)] rounded-full transition-colors">
+            <X size={16} className="text-gray-300" />
+          </button>
+        )}
       </div>
     </div>
-  );
+  )
 }
 
-export default Search;
+export default Search
+
