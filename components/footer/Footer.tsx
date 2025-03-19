@@ -6,8 +6,9 @@ function Footer() {
     <footer className="bg-[rgb(17,17,17)] p-4 md:px-8 md:py-10 relative mt-12">
       <div className="container mx-auto">
         <div className="sm:flex sm:items-center sm:justify-between">
-          <Link href="#" className="flex items-center mb-4 sm:mb-0">
-            <span className="self-center text-2xl text-gray-200 font-black whitespace-nowrap">RCMOVIES</span>
+        <Link href="/" className="flex items-center gap-2">
+            <span className="text-violet-500 font-bold text-3xl">RC</span>
+            <span className="hidden md:block text-white font-bold text-2xl">MOVIES</span>
           </Link>
           <ul className="flex flex-wrap items-center mb-6 text-sm text-gray-400 sm:mb-0 gap-6">
             <li>
