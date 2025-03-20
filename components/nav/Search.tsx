@@ -1,12 +1,11 @@
 "use client"
 
 import type React from "react"
-
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation" // Updated to App Router
 import { useEffect, useState, useRef } from "react"
 import { SearchIcon, X } from "lucide-react"
 
-function Search() {
+export default function Search() {
   const [searchValue, setSearchValue] = useState("")
   const [isExpanded, setIsExpanded] = useState(false)
   const router = useRouter()
@@ -59,17 +58,20 @@ function Search() {
   return (
     <div
       ref={searchContainerRef}
-      className={`relative flex items-center ${isExpanded ? "bg-[rgba(255,255,255,0.1)]" : ""} rounded-full transition-all duration-300`}
+      className={`
+        relative flex items-center rounded-full transition-all duration-300 ease-in-out
+        ${isExpanded ? "bg-[rgba(255,255,255,0.1)] ring-1 ring-[rgba(255,255,255,0.15)]" : ""}
+      `}
     >
       <div
         className={`
-          flex items-center cursor-pointer
-          ${isExpanded ? "pr-2" : "p-2 hover:bg-[rgba(255,255,255,0.1)]"}
-          rounded-full transition-all duration-300
+          flex items-center cursor-pointer rounded-full transition-all duration-300
+          ${isExpanded ? "pr-3 py-1.5" : "p-2.5 hover:bg-[rgba(255,255,255,0.1)]"}
         `}
         onClick={handleSearchClick}
+        aria-label={isExpanded ? "Search input" : "Open search"}
       >
-        <SearchIcon size={18} className="text-gray-300 min-w-[18px]" />
+        <SearchIcon size={20} className="text-gray-300 min-w-[20px] transition-transform duration-300" />
 
         <input
           ref={searchInputRef}
@@ -77,22 +79,25 @@ function Search() {
           value={searchValue}
           onChange={handleChange}
           className={`
-            bg-transparent border-none outline-none text-white text-sm
+            bg-transparent border-none outline-none text-white text-base
             transition-all duration-300 placeholder:text-gray-400
-            ${isExpanded ? "w-[180px] md:w-[220px] ml-2" : "w-0 ml-0"}
+            ${isExpanded ? "w-[220px] md:w-[280px] ml-2 opacity-100" : "w-0 ml-0 opacity-0"}
           `}
           placeholder="Search movies, shows..."
+          aria-hidden={!isExpanded}
         />
 
         {isExpanded && searchValue && (
-          <button onClick={clearSearch} className="p-1 hover:bg-[rgba(255,255,255,0.1)] rounded-full transition-colors">
-            <X size={16} className="text-gray-300" />
+          <button
+            onClick={clearSearch}
+            className="p-1 hover:bg-[rgba(255,255,255,0.15)] rounded-full transition-colors"
+            aria-label="Clear search"
+          >
+            <X size={18} className="text-gray-300" />
           </button>
         )}
       </div>
     </div>
   )
 }
-
-export default Search
 
