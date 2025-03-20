@@ -129,13 +129,13 @@ function TvEpisode(res: any) {
                     className=" w-full h-[300px] lg:h-[750px] mx-auto "
 
 
-                    // src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
-
-                    src={`https://embed.su/embed/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+                     src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+                    //src={`https:/www.2embed.cc/embedtv/${id}&${dataState?.season}&${dataState?.ep_num}`} 
+                    //src={`https://embed.su/embed/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
                     allowFullScreen
                   ></iframe>
                   
-          
+                  
                   
                   <div className="flex gap-1 p-1.5 justify-end">
                     {dataState.ep_num > 1 && (
