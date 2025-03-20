@@ -85,17 +85,6 @@ export default function MovieEpisode(resp: any,tmdb:any) {
 
   console.log(data);
 
-  // useEffect(() => {
-
-  //   player?.current
-  //     ?.changeSource({
-  //       src: stream?.sources?.filter((t:any) => t.quality == "auto")[0]?.url,
-  //       title:"props.title",
-  //       poster: "https://i.imgur.com/M2aFrfc.jpeg"
-        
-  //     })
-     
-  // }, [stream]);
   const subs :any = []
   const subtitles = () => {
     for (let i=0;i<s.length;i++) { subs.push({default : false,name:s[i]?.lang,src:s[i].url}) }
@@ -115,12 +104,6 @@ export default function MovieEpisode(resp: any,tmdb:any) {
   }, [id, imdbId, resp]);
 
 
-  // const fetchStream = async () => {
-  //   let url = `https://api.consumet.org/meta/tmdb/watch/${resp?.tmdb?.episodeId}?id=${resp?.tmdb.id}`
-  //   let req = await fetch(url)
-  //   let res = await req.json()
-  //   setStream(res)
-  // }
 console.log(resp)
   const handleIframe  = () => {
 
@@ -189,12 +172,11 @@ console.log(resp)
             onLoadCapture={handleIframe}
               className="p-2 w-full h-[270px] lg:h-[872px] mx-auto"
 
-               //src={`https://embed.su/embed/movie/${id}`}
+               src={`https://embed.su/embed/movie/${id}`}
 
-              src={`https://vidlink.pro/movie/${id}`}
+              //src={`https://vidlink.pro/movie/${id}`}
               allowFullScreen
             ></iframe>
-            {/* <EnimePlayer subtitles={subtitles()} src={"https://ottocors.vercel.app/cors?url=https://tc-1.dayimage.net/_v6/380ccc6aa21d4e175c3ebbf36eb393af084ce3306d32c57b77f505d8efa16912eae144c75c5ade7b13650b17dcf40835ef450fe3ee65a3e131368f85213a25a32c278706ad24a408390dd213c35d9a6782294bd8e1b9751f2d95fec0ad3045054c047845049a3843204568183c0a93366fb074a9d9cb60b776336e9e525dddde/master.m3u8"} poster="" title={data?.title}/> */}
 
             <HomeContainer swiperId={1} Data={casts} heading="Casts" />
 
@@ -210,16 +192,8 @@ console.log(resp)
   );
 }
 
-// export const getServerSideProps: GetServerSideProps = async (context: any) => {
-//   let id = context.params.id;
-//   let url = `https://api.themoviedb.org/3/movie/${id}?api_key=cfe422613b250f702980a3bbf9e90716`;
-//   let req = await fetch(url);
-//   let res = await req.json();
 
-//   return { props: { res } };
-// };
 
-// export default MovieEpisode;
 
 export async function getStaticPaths() {
   return { paths: [], fallback: "blocking" };
@@ -231,10 +205,6 @@ export const getStaticProps = async (context: any) => {
   let url1 = `https://api.themoviedb.org/3/movie/${id}?api_key=cfe422613b250f702980a3bbf9e90716`;
   let req1 = await fetch(url1);
   let resp = await req1.json();
-  // let url = `https://api.consumet.org/meta/tmdb/info/${id}?type=Movie`;
-  // let req = await fetch(url);
-  // let tmdb = await req.json();
-
   return { props: { resp } };
 };
 
