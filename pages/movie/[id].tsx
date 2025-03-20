@@ -172,9 +172,9 @@ console.log(resp)
             onLoadCapture={handleIframe}
               className="p-2 w-full h-[270px] lg:h-[872px] mx-auto"
 
-               src={`https://embed.su/embed/movie/${id}`}
+              // src={`https://embed.su/embed/movie/${id}`}
 
-              //src={`https://vidlink.pro/movie/${id}`}
+              src={`https://vidlink.pro/movie/${id}`}
               allowFullScreen
             ></iframe>
 
