@@ -181,7 +181,7 @@ const DramaShows = async () => {
     } />
       <HomeContainer swiperId={6} Data={latestMovies} heading="Upcoming Movies" />
       <HomeContainer swiperId={7} Data={animeShows} heading="Anime Shows" />
-      <HomeContainer swiperId={8} Data={animeMovies} heading="Anime Movies" />
+      
 
 
       </div>

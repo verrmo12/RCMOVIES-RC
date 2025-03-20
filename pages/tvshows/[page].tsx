@@ -1,29 +1,227 @@
-import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
-import Container from '../../components/container/Container'
-import Layout from '../../components/layout/Layout'
-const axios = require("axios")
+"use client"
+
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
+import { Tv, TrendingUp, Award, Clock } from "lucide-react"
+import CardModal from "../../components/container/CardModal"
+import Layout from "../../components/layout/Layout"
+import Header from "../../components/Header"
+import HomeCard from "../../components/container/HomeCard"
 
 function TvShows() {
-    const [data,setData] = useState<any>([])
-    const router = useRouter()
-    const {page} = router.query
+  const [data, setData] = useState<any>([])
+  const [headerData, setHeaderData] = useState<any>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [selected, setSelected] = useState(false)
+  const [cardId, setCardId] = useState(null)
+  const [filter, setFilter] = useState<string>("popular")
+  const router = useRouter()
+  const { page } = router.query
 
-    useEffect(() => {
-        fetchTvShows()
-    },[page])
+  useEffect(() => {
+    if (page) {
+      setLoading(true)
+      Promise.all([fetchTvShows(), fetchHeaderData()]).finally(() => {
+        setLoading(false)
+      })
+    }
+  }, [page, filter])
 
-    const fetchTvShows = async () => {
-      let req  = await axios.get(`https://api.themoviedb.org/3/discover/tv?sort_by=popularity.desc&page=${page}&api_key=cfe422613b250f702980a3bbf9e90716`)
-      let res = await req.data
+  const fetchHeaderData = async () => {
+    try {
+      const req = await fetch(`https://api.themoviedb.org/3/tv/popular?page=1&api_key=cfe422613b250f702980a3bbf9e90716`)
+      const res = await req.json()
+      setHeaderData(res.results.slice(0, 5))
+    } catch (error) {
+      console.error("Error fetching header data:", error)
+    }
+  }
+
+  const fetchTvShows = async () => {
+    try {
+      let endpoint = "discover/tv?sort_by=popularity.desc"
+
+      if (filter === "trending") {
+        endpoint = "trending/tv/week"
+      } else if (filter === "top_rated") {
+        endpoint = "tv/top_rated"
+      } else if (filter === "on_the_air") {
+        endpoint = "tv/on_the_air"
+      }
+
+      const req = await fetch(
+        `https://api.themoviedb.org/3/${endpoint}&page=${page}&api_key=cfe422613b250f702980a3bbf9e90716`,
+      )
+      const res = await req.json()
       setData(res.results)
+    } catch (error) {
+      console.error("Error fetching TV shows:", error)
+    }
+  }
+
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter)
+    router.push(`/tvshows/1`)
+  }
+
+  const handleClick = () => {
+    setSelected(false)
+  }
+
+  const handleSimilar = () => {
+    setSelected(false)
+  }
+
+  const handleCardClick = (id: any) => {
+    setCardId(id)
+    setSelected(true)
+  }
+
+  const getFilterTitle = () => {
+    switch (filter) {
+      case "trending":
+        return "Trending TV Shows"
+      case "top_rated":
+        return "Top Rated TV Shows"
+      case "on_the_air":
+        return "Currently Airing TV Shows"
+      default:
+        return "Popular TV Shows"
+    }
+  }
+
+  const getFilterDescription = () => {
+    switch (filter) {
+      case "trending":
+        return "The hottest TV shows trending this week across streaming platforms."
+      case "top_rated":
+        return "The highest-rated TV shows of all time, as ranked by critics and audiences."
+      case "on_the_air":
+        return "TV shows that are currently airing new episodes on networks and streaming services."
+      default:
+        return "Discover the most popular TV shows that everyone is watching right now."
+    }
   }
 
   return (
-    <Layout title={"Tv Shows"}>
-    <Container Data={data} heading="TV Shows" place='tvshows' />
-    </Layout>
+    <>
+      <AnimatePresence>
+        {selected && (
+          <CardModal
+            {...data.find((item: any) => item.id === cardId)}
+            handleClick={handleClick}
+            handleSimilar={handleSimilar}
+            id={cardId}
+            heading={getFilterTitle()}
+            media_type="tv"
+          />
+        )}
+      </AnimatePresence>
+
+      <Header Data={headerData} />
+      <Layout title={"TV Shows"}>
+        <div className="mt-[-10rem] relative z-10">
+          <section className="w-full relative px-6 md:px-10 lg:px-16 py-10">
+            <div className="mb-8">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-200">TV Shows</h2>
+
+             </div>
+
+                <div className="relative">
+                  <span className="block h-1 w-16 bg-violet-700 rounded-full"></span>
+                </div>
+
+                <p className="text-gray-400 max-w-3xl">{getFilterDescription()}</p>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="min-h-[50vh] flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-t-violet-700 border-r-transparent border-b-violet-700 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6"
+                >
+                  {data.map((item: any, index: number) => (
+                    <motion.div
+                      key={item.id || index}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="cursor-pointer transition-transform duration-300 hover:scale-105 hover:z-10"
+                      onClick={() => handleCardClick(item.id)}
+                    >
+                      <HomeCard {...item} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                <div className="mt-12 flex justify-center">
+                  <div className="flex items-center gap-2">
+                    {/* Previous button */}
+                    <button
+                      onClick={() => {
+                        if (Number(page) > 1) {
+                          router.push(`/tvshows/${Number(page) - 1}`)
+                        }
+                      }}
+                      disabled={Number(page) <= 1}
+                      className={`flex items-center justify-center w-10 h-10 rounded-md transition-colors ${
+                        Number(page) <= 1
+                          ? "bg-[rgb(30,30,30)] text-gray-500 cursor-not-allowed"
+                          : "bg-[rgb(30,30,30)] text-gray-200 hover:bg-violet-700 hover:text-white"
+                      }`}
+                    >
+                      <span className="sr-only">Previous</span>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Page number */}
+                    <span className="px-4 py-2 rounded-md bg-violet-700 text-white">{page}</span>
+
+                    {/* Next button */}
+                    <button
+                      onClick={() => router.push(`/tvshows/${Number(page) + 1}`)}
+                      className="flex items-center justify-center w-10 h-10 rounded-md bg-[rgb(30,30,30)] text-gray-200 hover:bg-violet-700 hover:text-white transition-colors"
+                    >
+                      <span className="sr-only">Next</span>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      </Layout>
+    </>
   )
 }
 
 export default TvShows
+

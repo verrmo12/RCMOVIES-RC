@@ -14,6 +14,8 @@ interface HomeCardProps {
   release_date?: string
   first_air_date?: string
   heading?: string
+  character?: string
+  job?: string
 }
 
 function HomeCard(props: HomeCardProps) {
@@ -23,12 +25,13 @@ function HomeCard(props: HomeCardProps) {
   const imagePath = isCast ? props.profile_path : props.poster_path
   const title = props.title || props.name || "Untitled"
   const year = props.release_date?.split("-")[0] || props.first_air_date?.split("-")[0]
+  const role = props.character || props.job
 
   return (
     <div
       className="relative overflow-hidden rounded-lg transition-all duration-300"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => !isCast && setIsHovered(true)}
+      onMouseLeave={() => !isCast && setIsHovered(false)}
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-lg">
         {/* Image */}
@@ -37,14 +40,14 @@ function HomeCard(props: HomeCardProps) {
           alt={title}
           width={300}
           height={450}
-          className="w-full h-full object-cover transition-transform duration-500"
+          className={`w-full h-full object-cover ${!isCast ? "transition-transform duration-500" : ""}`}
           style={{
             transform: isHovered ? "scale(1.05)" : "scale(1)",
           }}
         />
 
-        {/* Overlay on hover */}
-        {isHovered && (
+        {/* Overlay on hover - only for non-cast cards */}
+        {isHovered && !isCast && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -63,8 +66,8 @@ function HomeCard(props: HomeCardProps) {
           </motion.div>
         )}
 
-        {/* Rating badge */}
-        {props.vote_average && (
+        {/* Rating badge - only for movies/TV */}
+        {!isCast && props.vote_average && (
           <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
             <Star size={12} className="text-yellow-400 fill-yellow-400" />
             <span className="text-white text-xs font-medium">{props.vote_average.toFixed(1)}</span>
@@ -72,10 +75,14 @@ function HomeCard(props: HomeCardProps) {
         )}
       </div>
 
-      {/* Title and year */}
+      {/* Title and year/role */}
       <div className="mt-2 px-1">
         <h3 className="text-gray-200 font-medium text-sm truncate">{title}</h3>
-        {year && <p className="text-gray-400 text-xs">{year}</p>}
+        {isCast && role ? (
+          <p className="text-gray-400 text-xs truncate">{role}</p>
+        ) : year ? (
+          <p className="text-gray-400 text-xs">{year}</p>
+        ) : null}
       </div>
     </div>
   )

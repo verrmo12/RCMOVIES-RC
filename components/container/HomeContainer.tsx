@@ -67,35 +67,25 @@ function HomeContainer(data: HomeContainerProps): JSX.Element {
   }
 
   // Swiper breakpoints for Continue Watching section
-  const breakpoints = {
-    300: {
-      slidesPerView: 1.5,
-      spaceBetween: 10,
-    },
-    480: {
-      slidesPerView: 2,
-      spaceBetween: 10,
-    },
-    640: {
-      slidesPerView: 2.5,
-      spaceBetween: 10,
-    },
-    768: {
-      slidesPerView: 3,
-      spaceBetween: 10,
-    },
-    1024: {
-      slidesPerView: 4,
-      spaceBetween: 10,
-    },
-    1280: {
-      slidesPerView: 5,
-      spaceBetween: 10,
-    },
-    1536: {
-      slidesPerView: 6,
-      spaceBetween: 10,
-    },
+  const continueWatchingBreakpoints = {
+    300: { slidesPerView: 1.5, spaceBetween: 10 },
+    480: { slidesPerView: 2, spaceBetween: 10 },
+    640: { slidesPerView: 2.5, spaceBetween: 10 },
+    768: { slidesPerView: 3, spaceBetween: 10 },
+    1024: { slidesPerView: 4, spaceBetween: 10 },
+    1280: { slidesPerView: 5, spaceBetween: 10 },
+    1536: { slidesPerView: 6, spaceBetween: 10 },
+  }
+
+  // Swiper breakpoints for Cast section
+  const castBreakpoints = {
+    300: { slidesPerView: 2.5, spaceBetween: 10 },
+    480: { slidesPerView: 3.5, spaceBetween: 10 },
+    640: { slidesPerView: 4.5, spaceBetween: 10 },
+    768: { slidesPerView: 5.5, spaceBetween: 10 },
+    1024: { slidesPerView: 6.5, spaceBetween: 10 },
+    1280: { slidesPerView: 7.5, spaceBetween: 10 },
+    1536: { slidesPerView: 8.5, spaceBetween: 10 },
   }
 
   if (!data?.Data?.length) {
@@ -178,7 +168,7 @@ function HomeContainer(data: HomeContainerProps): JSX.Element {
                 nextEl: `.swiper-button-next-${data.swiperId}`,
                 prevEl: `.swiper-button-prev-${data.swiperId}`,
               }}
-              breakpoints={breakpoints}
+              breakpoints={continueWatchingBreakpoints}
               modules={[Navigation]}
             >
               {data?.Data?.map((item: any, index: number) => (
@@ -188,6 +178,46 @@ function HomeContainer(data: HomeContainerProps): JSX.Element {
                     onClick={() => router.push(`/${item.media_type}/${item.id}`)}
                   >
                     <ContinueWatchingCard {...item} heading={data.heading} />
+                  </div>
+                </SwiperSlide>
+              ))}
+
+              <button
+                className={`swiper-button-prev-${data.swiperId} absolute top-1/2 -translate-y-1/2 left-0 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors`}
+              >
+                <ChevronLeft className="text-white" size={24} />
+              </button>
+              <button
+                className={`swiper-button-next-${data.swiperId} absolute top-1/2 -translate-y-1/2 right-0 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors`}
+              >
+                <ChevronRight className="text-white" size={24} />
+              </button>
+            </Swiper>
+          </div>
+        ) : isCasts ? (
+          // Cast section with Swiper
+          <div className="relative px-2">
+            <Swiper
+              className="cast-swiper"
+              grabCursor={true}
+              speed={600}
+              navigation={{
+                nextEl: `.swiper-button-next-${data.swiperId}`,
+                prevEl: `.swiper-button-prev-${data.swiperId}`,
+              }}
+              breakpoints={castBreakpoints}
+              modules={[Navigation]}
+            >
+              {data?.Data?.map((item: any, index: number) => (
+                <SwiperSlide key={item.id || index} className="h-auto">
+                  <div
+                    className="cursor-pointer transition-transform duration-300 hover:scale-105"
+                    onClick={() => {
+                      setCardId(item.id)
+                      setSelected(!selected)
+                    }}
+                  >
+                    <HomeCard {...item} heading={data.heading} />
                   </div>
                 </SwiperSlide>
               ))}

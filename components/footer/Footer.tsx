@@ -17,7 +17,7 @@ function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="#" className="hover:text-white transition-colors">
+              <Link href="/movies" className="hover:text-white transition-colors">
                 Movies
               </Link>
             </li>
