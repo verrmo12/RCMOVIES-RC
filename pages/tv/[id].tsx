@@ -129,7 +129,7 @@ function TvEpisode(res: any) {
                     className=" w-full h-[300px] lg:h-[750px] mx-auto "
 
 
-                     //src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+                    // src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
 
                     src={`https://embed.su/embed/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
                     allowFullScreen
