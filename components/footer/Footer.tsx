@@ -12,23 +12,33 @@ function Footer() {
           </Link>
           <ul className="flex flex-wrap items-center mb-6 text-sm text-gray-400 sm:mb-0 gap-6">
             <li>
-              <Link href="#" className="hover:text-white transition-colors">
+              <Link href="/" className="hover:text-white transition-colors">
                 Home
               </Link>
             </li>
             <li>
-              <Link href="/movies" className="hover:text-white transition-colors">
+              <Link href="/movies/1" className="hover:text-white transition-colors">
                 Movies
               </Link>
             </li>
             <li>
-              <Link href="#" className="hover:text-white transition-colors">
+              <Link href="/tvshows/1" className="hover:text-white transition-colors">
                 TV Shows
               </Link>
             </li>
             <li>
-              <Link href="#" className="hover:text-white transition-colors">
-                About
+              <Link href="/topimdb/1" className="hover:text-white transition-colors">
+                Top Rated
+              </Link>
+            </li>
+            <li>
+              <Link href="/about" className="hover:text-white transition-colors">
+                About us
+              </Link>
+            </li>
+            <li>
+              <Link href="/policy" className="hover:text-white transition-colors">
+                Our Policy
               </Link>
             </li>
           </ul>
