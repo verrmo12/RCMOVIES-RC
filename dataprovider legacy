@@ -1,0 +1,24 @@
+TV Shows Link:
+<iframe
+        onLoadCapture={handleIframe}
+         className=" w-full h-[300px] lg:h-[750px] mx-auto "
+       src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+        //src={`https:/www.2embed.cc/embedtv/${id}&${dataState?.season}&${dataState?.ep_num}`} 
+       //src={`https://embed.su/embed/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+       allowFullScreen
+ ></iframe>
+
+
+
+
+ Movies Link :
+             <iframe
+            onLoadCapture={handleIframe}
+              className="p-2 w-full h-[270px] lg:h-[872px] mx-auto"
+
+               //src={`https://embed.su/embed/movie/${id}`}
+               //src={`https://www.2embed.cc/embed/movie/${id}`}
+
+              src={`https://vidlink.pro/movie/${id}`}
+              allowFullScreen
+            ></iframe>

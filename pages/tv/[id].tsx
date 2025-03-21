@@ -1,384 +1,722 @@
-import { GetServerSideProps } from "next";
-import dynamic from "next/dynamic";
+"use client"
 
-import Link from "next/link";
-import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-const Container = dynamic(() => import("../../components/container/Container"));
-
-import { addToMyList, removeFromList } from "../../redux/actions/myListAction";
+import { useRouter } from "next/router"
+import { useEffect, useRef, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useSelector, useDispatch } from "react-redux"
+import { addToMyList, removeFromList } from "../../redux/actions/myListAction"
+import { SetContinueWatching, SetCurrentState } from "../../redux/actions/tvShowAction"
 import {
-  SetContinueWatching,
-  SetCurrentEpisode,
-  SetCurrentSeason,
-  SetCurrentState,
-} from "../../redux/actions/tvShowAction";
-import { AnimatePresence, motion } from "framer-motion";
-import { currentEpisode } from "../../redux/reducers/tvShowReducer";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-const DetailContainer = dynamic(
-  () => import("../../components/details/DetailContainer")
-);
-const HomeContainer = dynamic(
-  () => import("../../components/container/HomeContainer")
-);
-const axios = require("axios");
+  Play,
+  Plus,
+  Minus,
+  Youtube,
+  Star,
+  Clock,
+  Calendar,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react"
+import HomeContainer from "../../components/container/HomeContainer"
+import Layout from "../../components/layout/Layout"
+import CardModal from "../../components/container/CardModal"
 
-function TvEpisode(res: any) {
-  const [data, setData] = useState<any>(res.res);
-  const [recommended, setRecommended] = useState<any>([]);
-  const [sEpisodes, setSEpisodes] = useState<any>(null);
-  const router = useRouter();
-  const { id } = router.query;
-  const eps: any = [];
-  const [currentSeason, setCurrentSeason] = useState(1);
-  const [showSeasons, setShowSeasons] = useState(true);
-  const ref = useRef();
-  const [click, setClick] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [notification, setNotification] = useState(false);
-  const [casts, setCasts] = useState<any>([]);
-  const [firstEpName, setFirstEpName] = useState("");
+function timeConvert(n: any) {
+  if (!n) return ""
+  var num = n
+  var hours = num / 60
+  var rhours = Math.floor(hours)
+  var minutes = (hours - rhours) * 60
+  var rminutes = Math.round(minutes)
+  return rhours + "h " + rminutes + "m"
+}
 
-  const { MyList, CurrentState, ContinueWatching } = useSelector(
-    (state: any) => state
-  );
-  const dispatch = useDispatch();
-  const dataState: any = { ep_num: 1, season: 1 };
+export default function TvShowPage(props: any) {
+  const [data, setData] = useState<any>(props.res)
+  const [recommended, setRecommended] = useState<any>([])
+  const [casts, setCasts] = useState<any>([])
+  const [sEpisodes, setSEpisodes] = useState<any>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [imdbId, setImdbId] = useState<any>("")
+  const [trailerKey, setTrailerKey] = useState<string>("")
+  const [showTrailer, setShowTrailer] = useState<boolean>(false)
+  const [selected, setSelected] = useState(false)
+  const [cardId, setCardId] = useState(null)
+  const [currentSeason, setCurrentSeason] = useState(1)
+  const [showSeasons, setShowSeasons] = useState(true)
+  const [showEpisodes, setShowEpisodes] = useState(true)
+  const [firstEpName, setFirstEpName] = useState("")
+
+  const { MyList, CurrentState, ContinueWatching } = useSelector((state: any) => state)
+  const [inMyList, setInMyList] = useState(false)
+  const dispatch = useDispatch()
+  const router = useRouter()
+  const { id } = router.query
+  const playerRef = useRef<HTMLIFrameElement>(null)
+
+  // Get current episode state
+  const dataState: any = { ep_num: 1, season: 1 }
   CurrentState?.filter((item: any) => {
     if (item.id == id) {
-      dataState["ep_num"] = item.episode_number;
-      dataState["season"] = item.season_number;
-      dataState["ep_name"] = item.episode_name;
-      dataState["episode_image"] = item.episode_image;
+      dataState["ep_num"] = item.episode_number
+      dataState["season"] = item.season_number
+      dataState["ep_name"] = item.episode_name
+      dataState["episode_image"] = item.episode_image
     }
-  });
-
-  console.log(currentEpisode);
-  useEffect(() => {
-    const ce = setCurrentSeason(dataState.season);
-
-    return ce;
-  }, []);
+  })
 
   useEffect(() => {
-    fetchCasts();
-    fetchRecommended();
-    fetchSeasonEpisodes();
-    setData(res.res);
+    if (id) {
+      setLoading(true)
+      Promise.all([
+        fetchTvData(),
+        fetchImdbId(),
+        fetchRecommended(),
+        fetchCasts(),
+        fetchTrailer(),
+        fetchSeasonEpisodes(),
+      ]).finally(() => {
+        setLoading(false)
+      })
 
-    const current = MyList?.filter((item: any) => item.id == id);
-    current.length > 0 ? setClick(true) : setClick(false);
-  }, [id, currentSeason, firstEpName, res]);
+      // Check if show is in user's list
+      const current = MyList.filter((item: any) => item.id == id)
+      setInMyList(current.length > 0)
+    }
+  }, [id, currentSeason])
+
+  const fetchTvData = async () => {
+    try {
+      const url = `https://api.themoviedb.org/3/tv/${id}?&api_key=cfe422613b250f702980a3bbf9e90716`
+      const req = await fetch(url)
+      const res = await req.json()
+      setData(res)
+      return res
+    } catch (error) {
+      console.error("Error fetching TV data:", error)
+    }
+  }
+
+  const fetchImdbId = async () => {
+    try {
+      const url = `https://api.themoviedb.org/3/tv/${id}/external_ids?api_key=cfe422613b250f702980a3bbf9e90716`
+      const req = await fetch(url)
+      const res = await req.json()
+      setImdbId(res.imdb_id)
+      return res
+    } catch (error) {
+      console.error("Error fetching IMDB ID:", error)
+    }
+  }
+
+  const fetchRecommended = async () => {
+    try {
+      const url = `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=cfe422613b250f702980a3bbf9e90716`
+      const req = await fetch(url)
+      const res = await req.json()
+      setRecommended(res.results)
+      return res
+    } catch (error) {
+      console.error("Error fetching recommendations:", error)
+    }
+  }
+
+  const fetchCasts = async () => {
+    try {
+      const url = `https://api.themoviedb.org/3/tv/${id}/credits?api_key=cfe422613b250f702980a3bbf9e90716`
+      const req = await fetch(url)
+      const res = await req.json()
+      setCasts(res.cast)
+      return res
+    } catch (error) {
+      console.error("Error fetching cast data:", error)
+    }
+  }
+
+  const fetchTrailer = async () => {
+    try {
+      const url = `https://api.themoviedb.org/3/tv/${id}/videos?api_key=cfe422613b250f702980a3bbf9e90716`
+      const req = await fetch(url)
+      const res = await req.json()
+      const trailer = res.results?.find((video: any) => video.type === "Trailer")
+      if (trailer) {
+        setTrailerKey(trailer.key)
+      }
+      return res
+    } catch (error) {
+      console.error("Error fetching trailer:", error)
+    }
+  }
+
+  const fetchSeasonEpisodes = async () => {
+    try {
+      const url = `https://api.themoviedb.org/3/tv/${id}/season/${currentSeason}?api_key=cfe422613b250f702980a3bbf9e90716`
+      const req = await fetch(url)
+      const res = await req.json()
+      setSEpisodes(res.episodes || [])
+      if (res.episodes && res.episodes.length > 0) {
+        setFirstEpName(res.episodes[0]?.name)
+      }
+      return res
+    } catch (error) {
+      console.error("Error fetching season episodes:", error)
+    }
+  }
 
   const handleIframe = () => {
+    // Add to continue watching if not already there
     if (dataState.length < 1) {
-      dataState["ep_name"] = firstEpName;
-      dataState["episode_image"] = sEpisodes[0]?.still_path;
+      dataState["ep_name"] = firstEpName
+      dataState["episode_image"] = sEpisodes[0]?.still_path
     }
+
     dispatch(
       SetContinueWatching({
         id: id,
         poster_path: data?.poster_path,
-        backdrop_path: dataState?.episode_image || sEpisodes[0].still_path,
+        backdrop_path: dataState?.episode_image || (sEpisodes[0] && sEpisodes[0].still_path),
         title: data?.name,
         season: dataState?.season || 1,
         episode: dataState?.ep_num || 1,
-        episode_name: dataState?.ep_name || sEpisodes[0].name,
+        episode_name: dataState?.ep_name || (sEpisodes[0] && sEpisodes[0].name),
         media_type: "tv",
         time: Date.now(),
-      })
-    );
-  };
+      }),
+    )
+  }
 
-  const fetchCasts = async () => {
-    const url = `https://api.themoviedb.org/3/tv/${id}/credits?api_key=cfe422613b250f702980a3bbf9e90716`;
-    let req = await axios.get(url);
-    let res = req.data;
-    setCasts(res.cast);
-  };
-  const fetchSeasonEpisodes = async () => {
-    let url = `https://api.themoviedb.org/3/tv/${id}/season/${currentSeason}?api_key=cfe422613b250f702980a3bbf9e90716`;
-    let req = await axios.get(url);
-    let res = req.data;
-    setSEpisodes(res.episodes);
-    setFirstEpName(res.episodes[0]?.name);
-  };
+  const handleMyListToggle = () => {
+    if (inMyList) {
+      dispatch(removeFromList(data.id))
+      setInMyList(false)
+    } else {
+      dispatch(
+        addToMyList({
+          id: data.id,
+          title: data.name,
+          poster_path: data.poster_path,
+          backdrop_path: data.backdrop_path,
+          overview: data.overview,
+          media_type: "tv",
+        }),
+      )
+      setInMyList(true)
+    }
+  }
 
-  const fetchRecommended = async () => {
-    const url = `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=cfe422613b250f702980a3bbf9e90716`;
-    let req = await axios.get(url);
-    let res = req.data;
-    setRecommended(res.results);
-  };
+  const handleCardClick = (id: any) => {
+    setCardId(id)
+    setSelected(true)
+  }
 
-  const last_air = Date.parse(data.last_air_date);
+  const handleModalClose = () => {
+    setSelected(false)
+  }
+
+  const handleSimilar = () => {
+    setSelected(false)
+  }
+
+  const handlePrevEpisode = () => {
+    if (dataState.ep_num > 1) {
+      const filterEp = sEpisodes.filter((t: any) => t.episode_number === Number.parseInt(dataState.ep_num) - 1)[0]
+      dispatch(
+        SetCurrentState({
+          id: id,
+          episode_number: Number.parseInt(dataState.ep_num) - 1,
+          episode_name: filterEp.name,
+          season_number: filterEp.season_number,
+          episode_image: filterEp.still_path,
+        }),
+      )
+    }
+  }
+
+  const handleNextEpisode = () => {
+    if (dataState.ep_num < sEpisodes?.length) {
+      const filterEp = sEpisodes.filter((t: any) => t.episode_number === Number.parseInt(dataState.ep_num) + 1)[0]
+      dispatch(
+        SetCurrentState({
+          id: id,
+          episode_number: Number.parseInt(dataState.ep_num) + 1,
+          episode_name: filterEp.name,
+          season_number: filterEp.season_number,
+          episode_image: filterEp.still_path,
+        }),
+      )
+    }
+  }
+
+  const handleEpisodeSelect = (ep: any) => {
+    dispatch(
+      SetCurrentState({
+        id: id,
+        episode_number: ep.episode_number,
+        episode_name: ep.name,
+        season_number: ep.season_number,
+        episode_image: ep.still_path,
+      }),
+    )
+  }
 
   return (
-    <>
-      <div className="w-full	relative mx-auto ">
-        <DetailContainer {...data} media_type="tv" />
-        <div className="px-1 lg:px-6 mx-auto">
-          <div>
-            <div className="flex flex-col ">
-              <div className="flex">
-                <div className="w-full">
-                  <iframe
-                    onLoadCapture={handleIframe}
-                    className=" w-full h-[300px] lg:h-[750px] mx-auto "
+    <Layout title={data?.name || "TV Show"}>
+      <AnimatePresence>
+        {selected && (
+          <CardModal
+            {...recommended.find((item: any) => item.id === cardId)}
+            handleClick={handleModalClose}
+            handleSimilar={handleSimilar}
+            id={cardId}
+            heading="Recommended Shows"
+            media_type="tv"
+          />
+        )}
+      </AnimatePresence>
 
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-t-violet-700 border-r-transparent border-b-violet-700 border-l-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <>
+          {/* TV Show Hero Section */}
+          <div
+            className="relative w-full h-[50vh] md:h-[70vh] bg-cover bg-center"
+            style={{
+              backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.1), rgb(17,17,17)), url(https://image.tmdb.org/t/p/original/${data?.backdrop_path})`,
+              backgroundPosition: "center 20%",
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-[rgb(17,17,17)] via-[rgba(17,17,17,0.8)] to-transparent"></div>
 
-                     src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
-                    //src={`https:/www.2embed.cc/embedtv/${id}&${dataState?.season}&${dataState?.ep_num}`} 
-                    //src={`https://embed.su/embed/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
-                    allowFullScreen
-                  ></iframe>
-                  
-                  
-                  
-                  <div className="flex gap-1 p-1.5 justify-end">
-                    {dataState.ep_num > 1 && (
-
-                    <button
-                     onClick={() => {
-
-                      const filterEp = sEpisodes.filter((t:any) => t.episode_number === parseInt(dataState.ep_num) -   1 )[0]
-                      dispatch(
-                        SetCurrentState({
-                          id: id,
-                          episode_number: parseInt(dataState.ep_num) - 1,
-                          episode_name: filterEp.name,
-                          season_number: filterEp.season_number,
-                          episode_image: filterEp.still_path,
-                        })
-                      );
-                    }}
-                      className="px-5 py-2 bg-neutral-800 hover:bg-[#4815ff] rounded-l-full flex items-center gap-3"
-                    >
-                      <span><FaChevronLeft /></span>
-                      Prev Ep
-                    </button>
-                    )}
-
-{dataState.ep_num < sEpisodes?.length && (
-  <button 
-                    onClick={() => {
-
-                      const filterEp = sEpisodes.filter((t:any) => t.episode_number === parseInt(dataState.ep_num) + 1)[0]
-                      dispatch(
-                        SetCurrentState({
-                          id: id,
-                          episode_number: parseInt(dataState.ep_num) + 1,
-                          episode_name: filterEp.name,
-                          season_number: filterEp.season_number,
-                          episode_image: filterEp.still_path,
-                        })
-                      );
-                    }}
-                     className="px-5 py-2 bg-neutral-800 hover:bg-[#4815ff] rounded-r-full flex items-center gap-3">
-                      Next Ep
-                      <span>
-                        <FaChevronRight />
-                      </span>
-                    </button>
-) }
-                    
-                  </div>
+            <div className="w-full px-6 md:px-10 lg:px-16 h-full flex flex-col justify-end pb-12 relative z-10">
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                {/* Poster */}
+                <div className="hidden md:block w-64 h-96 rounded-lg overflow-hidden shadow-2xl transform translate-y-8">
+                  <img
+                    src={
+                      data?.poster_path
+                        ? `https://image.tmdb.org/t/p/w500/${data.poster_path}`
+                        : "/placeholder.svg?height=384&width=256"
+                    }
+                    alt={data?.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
-                
+                {/* TV Show Info */}
+                <div className="flex-1">
+                  <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">{data?.name}</h1>
+
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    {data?.first_air_date && (
+                      <div className="flex items-center gap-1.5 bg-[rgba(255,255,255,0.1)] backdrop-blur-sm px-3 py-1.5 rounded-full text-white">
+                        <Calendar size={16} />
+                        <span>{data.first_air_date.split("-")[0]}</span>
+                      </div>
+                    )}
+
+                    {data?.vote_average && (
+                      <div className="flex items-center gap-1.5 bg-[rgba(255,255,255,0.1)] backdrop-blur-sm px-3 py-1.5 rounded-full text-white">
+                        <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                        <span>{data.vote_average.toFixed(1)}</span>
+                      </div>
+                    )}
+
+                    {data?.number_of_seasons && (
+                      <div className="flex items-center gap-1.5 bg-[rgba(255,255,255,0.1)] backdrop-blur-sm px-3 py-1.5 rounded-full text-white">
+                        <Clock size={16} />
+                        <span>
+                          {data.number_of_seasons} {data.number_of_seasons === 1 ? "Season" : "Seasons"}
+                        </span>
+                      </div>
+                    )}
+
+                    {data?.genres &&
+                      data.genres.map((genre: any) => (
+                        <div
+                          key={genre.id}
+                          className="bg-[rgba(255,255,255,0.1)] backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm"
+                        >
+                          {genre.name}
+                        </div>
+                      ))}
+                  </div>
+
+                  <p className="text-gray-300 mb-6 max-w-2xl">{data?.overview}</p>
+
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => playerRef.current?.scrollIntoView({ behavior: "smooth" })}
+                      className="py-2 px-5 bg-violet-700 hover:bg-violet-800 text-white rounded-md font-medium flex items-center gap-2 transition-colors"
+                    >
+                      <Play size={18} className="fill-white" />
+                      <span>Watch Now</span>
+                    </button>
+
+                    {trailerKey && (
+                      <button
+                        onClick={() => setShowTrailer(true)}
+                        className="py-2 px-5 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium flex items-center gap-2 transition-colors"
+                      >
+                        <Youtube size={18} />
+                        <span>Watch Trailer</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={handleMyListToggle}
+                      className={`py-2 px-5 ${inMyList ? "bg-violet-700 text-white" : "bg-[rgba(255,255,255,0.1)] text-white"} rounded-md font-medium flex items-center gap-2 transition-colors`}
+                    >
+                      {inMyList ? (
+                        <>
+                          <Minus size={18} />
+                          <span>Remove from List</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={18} />
+                          <span>Add to List</span>
+                        </>
+                      )}
+                    </button>
+
+                    {imdbId && (
+                      <a
+                        href={`https://www.imdb.com/title/${imdbId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2 px-5 bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] text-white rounded-md font-medium flex items-center gap-2 transition-colors"
+                      >
+                        <ExternalLink size={18} />
+                        <span>IMDB</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Trailer Modal */}
+          <AnimatePresence>
+            {showTrailer && (
+              <div
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setShowTrailer(false)}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <iframe
+                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+                    className="w-full h-full"
+                    allowFullScreen
+                    allow="autoplay"
+                  ></iframe>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Player Section */}
+          <div className="bg-[rgb(17,17,17)] py-12">
+            <div className="container mx-auto px-6 md:px-10 lg:px-16">
+              <div className="flex flex-wrap items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">
+                  {data?.name} - Season {dataState.season}, Episode {dataState.ep_num}
+                  {dataState.ep_name && (
+                    <span className="text-lg font-normal ml-2 text-gray-300">- {dataState.ep_name}</span>
+                  )}
+                </h2>
+
+                <div className="flex gap-2 mt-2 sm:mt-0">
+                  <button
+                    onClick={handlePrevEpisode}
+                    disabled={dataState.ep_num <= 1}
+                    className={`py-2 px-4 rounded-md flex items-center gap-1 transition-colors ${
+                      dataState.ep_num <= 1
+                        ? "bg-[rgb(30,30,30)] text-gray-500 cursor-not-allowed"
+                        : "bg-[rgb(30,30,30)] text-gray-200 hover:bg-violet-700 hover:text-white"
+                    }`}
+                  >
+                    <ChevronLeft size={16} />
+                    <span>Prev</span>
+                  </button>
+
+                  <button
+                    onClick={handleNextEpisode}
+                    disabled={dataState.ep_num >= sEpisodes?.length}
+                    className={`py-2 px-4 rounded-md flex items-center gap-1 transition-colors ${
+                      dataState.ep_num >= sEpisodes?.length
+                        ? "bg-[rgb(30,30,30)] text-gray-500 cursor-not-allowed"
+                        : "bg-[rgb(30,30,30)] text-gray-200 hover:bg-violet-700 hover:text-white"
+                    }`}
+                  >
+                    <span>Next</span>
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
 
-              <div className="p-1">
-              <div
-                onClick={() => {
-                  setShowSeasons(!showSeasons);
-                  setIsOpen(!isOpen);
-                }}
-                className="bg-stone-900 mt-6  w-fit rounded-sm  my-3 font-semibold text-center cursor-pointer p-3 flex  justify-between  gap-10 items-center hover:bg-neutral-900"
-              >
-                Seasons
-                <span>
-                  {showSeasons ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2.5}
-                      stroke="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 15.75l7.5-7.5 7.5 7.5"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2.5}
-                      stroke="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
-                  )}
-                </span>
+              <div className="bg-[rgb(22,22,22)] rounded-lg p-2 md:p-4 shadow-lg">
+                <iframe
+                  ref={playerRef}
+                  onLoadCapture={handleIframe}
+                  className="w-full aspect-video rounded-md"
+                  src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+                  allowFullScreen
+                ></iframe>
               </div>
-              <div className="flex flex-col  w-full   overflow-y-scroll gap-2 ">
+            </div>
+          </div>
+
+          {/* Seasons & Episodes Section */}
+          <div className="bg-[rgb(17,17,17)] py-8">
+            <div className="container mx-auto px-6 md:px-10 lg:px-16">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Seasons */}
+                <div className="lg:col-span-1">
+                  <button
+                    onClick={() => setShowSeasons(!showSeasons)}
+                    className="w-full bg-[rgb(22,22,22)] hover:bg-[rgb(30,30,30)] p-4 rounded-lg mb-4 flex items-center justify-between transition-colors"
+                  >
+                    <span className="text-lg font-semibold text-white">Seasons</span>
+                    {showSeasons ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </button>
+
                   <AnimatePresence>
                     {showSeasons && (
                       <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{
-                          opacity: 1,
-                          type: "spring",
-                          transition: { duration: 0.3 },
-                        }}
-                        exit={{
-                          opacity: 0,
-                          transition: { duration: 0.3 },
-                        }}
-                        className={`flex flex-wrap   gap-2  mx-2 transition-all`}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
                       >
-                        {data?.seasons
-                          ?.filter((f: any) => f.name !== "Specials")
-                          .map((s: any) => {
-                            return (
-                              s.air_date != null && (
-                                <div
-                                  className={`${
-                                    s.season_number === dataState?.season
-                                      ? "bg-[#4815ff]"
-                                      : "bg-neutral-900"
-                                  }  cursor-pointer  text-center hover:bg-[#4815ff] overflow-hidden text-ellipsis whitespace-nowrap	 rounded-md    transition-all`}
-                                  key={s.season_number}
-                                  onClick={() => {
-                                    setCurrentSeason(s.season_number);
-                                  }}
-                                >
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3 mb-6">
+                          {data?.seasons
+                            ?.filter((f: any) => f.name !== "Specials" && f.air_date !== null)
+                            .map((season: any) => (
+                              <div
+                                key={season.id}
+                                onClick={() => setCurrentSeason(season.season_number)}
+                                className={`${
+                                  season.season_number === dataState?.season
+                                    ? "border-violet-700 bg-[rgba(139,92,246,0.1)]"
+                                    : "border-transparent bg-[rgb(22,22,22)]"
+                                } border-2 rounded-lg overflow-hidden cursor-pointer hover:bg-[rgba(139,92,246,0.05)] transition-all`}
+                              >
+                                <div className="relative aspect-[2/3]">
                                   <img
                                     src={
-                                      `https://image.tmdb.org/t/p/original//${s?.poster_path}` ||
-                                      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png"
+                                      season.poster_path
+                                        ? `https://image.tmdb.org/t/p/w300/${season.poster_path}`
+                                        : "/placeholder.svg?height=300&width=200"
                                     }
-                                    className="max-h-[200px] lg:max-h-[240px] w-full object-cover"
+                                    alt={season.name}
+                                    className="w-full h-full object-cover"
                                   />
-
-                                  <h1 className="p-2">{s.name}</h1>
                                 </div>
-                              )
-                            );
-                          })}
+                                <div className="p-2 text-center">
+                                  <h3 className="text-sm font-medium text-gray-200 truncate">{season.name}</h3>
+                                  <p className="text-xs text-gray-400">{season.episode_count} Episodes</p>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-                <h1 className="py-3 text-xl font-medium">Episodes:</h1>
 
-                <div className=" grid grid-cols-1 lg:grid-cols-6 gap-1 w-full overflow-y-scroll lg:max-w-">
-                  {sEpisodes?.map((ep: any) => (
-                    <div
-                      key={ep.episode_number}
-                      onClick={() => {
-                        dispatch(
-                          SetCurrentState({
-                            id: id,
-                            episode_number: ep.episode_number,
-                            episode_name: ep.name,
-                            season_number: ep.season_number,
-                            episode_image: ep.still_path,
-                          })
-                        );
-                      }}
-                    >
-                      <div className="">
-                        {/* <img
-                          className="flex-shrink-0 w-full h-[170px] rounded-sm object-cover"
-                          src={`https://www.themoviedb.org/t/p/original${ep.still_path}`}
-                          // src="https://i.imgur.com/Xj42miJg.jpg"
-                          alt={ep.title}
-                        /> */}
-                        {/* <small className="bg-neutral-900/80 font-black py-0.5 px-1.5 absolute top-0 left-0 rounded-br-lg">
-                  {ep.episode_number}
-                </small> */}
-                        {/* <small className=" font-lighter p-0.5 ">
-                  {ep.name || "Episode " + ep.episode_number}
-                </small> */}
-                      </div>
+                {/* Episodes */}
+                <div className="lg:col-span-3">
+                  {/* Add state for showing/hiding episodes */}
+                  <button
+                    onClick={() => setShowEpisodes(!showEpisodes)}
+                    className="w-full bg-[rgb(22,22,22)] hover:bg-[rgb(30,30,30)] p-4 rounded-lg mb-4 flex items-center justify-between transition-colors"
+                  >
+                    <span className="text-lg font-semibold text-white">Episodes</span>
+                    {showEpisodes ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </button>
 
-                      <h1
-                        style={{ color: "white" }}
-                        className={`${
-                          ep.episode_number === dataState?.ep_num &&
-                          ep.season_number === dataState?.season
-                            ? "bg-[#4815ff]"
-                            : "bg-neutral-900"
-                        } drop-shadow-xl p-3 overflow-hidden text-ellipsis	whitespace-nowrap	 transition-all font-semibold  cursor-pointer hover:bg-[#4815ff]`}
+                  <AnimatePresence>
+                    {showEpisodes && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
                       >
-                        Ep {ep.episode_number}:{" "}
-                        <span className="font-light text-gray-300 italic">
-                          {ep.name}
-                        </span>
-                      </h1>
-                    </div>
-                  ))}
+                        <div className="bg-[rgb(22,22,22)] rounded-lg overflow-hidden">
+                          {sEpisodes?.length > 0 ? (
+                            <div className="divide-y divide-gray-800">
+                              {sEpisodes.map((episode: any) => (
+                                <div
+                                  key={episode.id}
+                                  onClick={() => handleEpisodeSelect(episode)}
+                                  className={`${
+                                    episode.episode_number === dataState?.ep_num &&
+                                    episode.season_number === dataState?.season
+                                      ? "bg-violet-700"
+                                      : "bg-transparent hover:bg-[rgb(30,30,30)]"
+                                  } p-4 cursor-pointer transition-colors`}
+                                >
+                                  <div className="flex flex-col sm:flex-row gap-4">
+                                    {episode.still_path && (
+                                      <div className="sm:w-48 rounded-md overflow-hidden flex-shrink-0">
+                                        <img
+                                          src={`https://image.tmdb.org/t/p/w300/${episode.still_path}`}
+                                          alt={episode.name}
+                                          className="w-full aspect-video object-cover"
+                                        />
+                                      </div>
+                                    )}
+
+                                    <div className="flex-1">
+                                      <div className="flex items-start justify-between">
+                                        <h4 className="text-white font-medium">
+                                          {episode.episode_number}. {episode.name}
+                                        </h4>
+                                        {episode.runtime && (
+                                          <span className="text-gray-400 text-sm">{episode.runtime} min</span>
+                                        )}
+                                      </div>
+
+                                      {episode.air_date && (
+                                        <p className="text-gray-400 text-sm mt-1">
+                                          {new Date(episode.air_date).toLocaleDateString()}
+                                        </p>
+                                      )}
+
+                                      {episode.overview && (
+                                        <p className="text-gray-300 text-sm mt-2 line-clamp-2">{episode.overview}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-6 text-center">
+                              <p className="text-gray-400">No episodes available for this season.</p>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
-              
             </div>
           </div>
 
-          <HomeContainer swiperId={0} Data={casts} heading="Casts" />
+          {/* Cast Section */}
+          <div className="bg-[rgb(17,17,17)] py-8">
+            <div className="container mx-auto px-6 md:px-10 lg:px-16">
+              <HomeContainer swiperId={1} Data={casts} heading="Casts" />
+            </div>
+          </div>
 
-          <Container
-            Data={recommended}
-            heading="YOU MAY ALSO LIKE"
-            place="tvshows"
-          />
-        </div>
-      </div>
-    </>
-  );
+          {/* Recommended Shows */}
+          <div className="bg-[rgb(17,17,17)] py-8">
+            <div className="container mx-auto px-6 md:px-10 lg:px-16">
+              <div className="mb-8">
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-200">Shows You May Also Like</h2>
+
+                  <div className="relative">
+                    <span className="block h-1 w-16 bg-violet-700 rounded-full"></span>
+                  </div>
+
+                  <p className="text-gray-400 max-w-3xl">
+                    If you enjoyed {data?.name}, you might like these similar shows.
+                  </p>
+                </div>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6"
+              >
+                {recommended.slice(0, 12).map((item: any, index: number) => (
+                  <motion.div
+                    key={item.id || index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="cursor-pointer transition-transform duration-300 hover:scale-105 hover:z-10"
+                    onClick={() => handleCardClick(item.id)}
+                  >
+                    <div className="relative">
+                      <div className="relative aspect-[2/3] overflow-hidden rounded-lg">
+                        <img
+                          src={
+                            item.poster_path
+                              ? `https://image.tmdb.org/t/p/w500/${item.poster_path}`
+                              : "/placeholder.svg?height=450&width=300"
+                          }
+                          alt={item.name}
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
+
+                        {item.vote_average && (
+                          <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+                            <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                            <span className="text-white text-xs font-medium">{item.vote_average.toFixed(1)}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-2 px-1">
+                        <h3 className="text-gray-200 font-medium text-sm truncate">{item.name}</h3>
+                        <p className="text-gray-400 text-xs">{item.first_air_date?.split("-")[0] || "N/A"}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+          </div>
+        </>
+      )}
+    </Layout>
+  )
 }
 
-// TvEpisode.getInitialProps = async (context:any) => {
-//   let id = context.params.id;
-//   let url = `https://api.themoviedb.org/3/tv/${id}?api_key=cfe422613b250f702980a3bbf9e90716`;
-//   let req = await fetch(url);
-//   let res = await req.json();
-
-//   return { props: { res } };
-// };
-
-// export const getServerSideProps: GetServerSideProps = async (context: any) => {
-//   let id = context.params.id;
-//   let url = `https://api.themoviedb.org/3/tv/${id}?api_key=cfe422613b250f702980a3bbf9e90716`;
-//   let req = await fetch(url);
-//   let res = await req.json();
-
-//   return { props: { res } };
-// };
-
 export async function getStaticPaths() {
-  return { paths: [], fallback: "blocking" };
+  return { paths: [], fallback: "blocking" }
 }
 
 export const getStaticProps = async (context: any) => {
-  let id = context.params.id;
-  let url = `https://api.themoviedb.org/3/tv/${id}?api_key=cfe422613b250f702980a3bbf9e90716`;
-  let req = await fetch(url);
-  let res = await req.json();
+  const id = context.params.id
+  const url = `https://api.themoviedb.org/3/tv/${id}?api_key=cfe422613b250f702980a3bbf9e90716`
 
-  return { props: { res } };
-};
+  try {
+    const req = await fetch(url)
+    const res = await req.json()
+    return {
+      props: { res },
+      revalidate: 60 * 60, // Revalidate every hour
+    }
+  } catch (error) {
+    console.error("Error fetching TV show data:", error)
+    return {
+      notFound: true,
+    }
+  }
+}
 
-export default TvEpisode;
