@@ -1,5 +1,3 @@
-"use client"
-
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -35,7 +33,7 @@ function Search() {
 
   const fetchSearchResults = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/search/multi?query=${searchQuery}&api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/search/multi?query=${searchQuery}&api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       setData(res.results || [])

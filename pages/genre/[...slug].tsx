@@ -1,5 +1,3 @@
-"use client"
-
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -42,7 +40,7 @@ function Genre() {
     try {
       const mediaType = isTvOnly ? "tv" : type
       const req = await fetch(
-        `https://api.themoviedb.org/3/discover/${mediaType}?page=1&api_key=cfe422613b250f702980a3bbf9e90716&with_genres=${genreId}&sort_by=popularity.desc`,
+        `https://api.themoviedb.org/3/discover/${mediaType}?page=1&api_key=875cecec683eb9cfc4cb845ead32e16e&with_genres=${genreId}&sort_by=popularity.desc`,
       )
       const res = await req.json()
       setHeaderData(res.results.slice(0, 5))
@@ -55,7 +53,7 @@ function Genre() {
     try {
       const mediaType = isTvOnly ? "tv" : type
       const req = await fetch(
-        `https://api.themoviedb.org/3/discover/${mediaType}?page=${currentPage}&api_key=cfe422613b250f702980a3bbf9e90716&with_genres=${genreId}`,
+        `https://api.themoviedb.org/3/discover/${mediaType}?page=${currentPage}&api_key=875cecec683eb9cfc4cb845ead32e16e&with_genres=${genreId}`,
       )
       const res = await req.json()
       setData(res.results)

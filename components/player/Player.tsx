@@ -1,4 +1,3 @@
-"use client";
 import Player, { PlayerEvent,isMobile  } from "@oplayer/core";
 import ui from "@oplayer/ui";
 import hls from "@oplayer/hls";

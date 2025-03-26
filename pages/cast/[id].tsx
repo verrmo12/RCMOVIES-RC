@@ -14,7 +14,7 @@ function CastMovies() {
     },[id])
 
     const fetchCastMovies = async () => {
-        let url = `https://api.themoviedb.org/3/person/${id && id.split("-")[1] as string}/combined_credits?api_key=cfe422613b250f702980a3bbf9e90716`
+        let url = `https://api.themoviedb.org/3/person/${id && id.split("-")[1] as string}/combined_credits?api_key=875cecec683eb9cfc4cb845ead32e16e`
         let req = await fetch(url);
         let res = await req.json();
         console.log(res)

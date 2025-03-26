@@ -88,7 +88,7 @@ export default function TvShowPage(props: any) {
 
   const fetchTvData = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/tv/${id}?&api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/tv/${id}?&api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       setData(res)
@@ -100,7 +100,7 @@ export default function TvShowPage(props: any) {
 
   const fetchImdbId = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/tv/${id}/external_ids?api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/tv/${id}/external_ids?api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       setImdbId(res.imdb_id)

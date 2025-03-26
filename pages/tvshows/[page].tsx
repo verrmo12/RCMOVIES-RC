@@ -1,5 +1,3 @@
-"use client"
-
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -31,7 +29,7 @@ function TvShows() {
 
   const fetchHeaderData = async () => {
     try {
-      const req = await fetch(`https://api.themoviedb.org/3/tv/popular?page=1&api_key=cfe422613b250f702980a3bbf9e90716`)
+      const req = await fetch(`https://api.themoviedb.org/3/tv/popular?page=1&api_key=875cecec683eb9cfc4cb845ead32e16e`)
       const res = await req.json()
       setHeaderData(res.results.slice(0, 5))
     } catch (error) {
@@ -52,7 +50,7 @@ function TvShows() {
       }
 
       const req = await fetch(
-        `https://api.themoviedb.org/3/${endpoint}&page=${page}&api_key=cfe422613b250f702980a3bbf9e90716`,
+        `https://api.themoviedb.org/3/${endpoint}&page=${page}&api_key=875cecec683eb9cfc4cb845ead32e16e`,
       )
       const res = await req.json()
       setData(res.results)
@@ -128,8 +126,7 @@ function TvShows() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4 flex-wrap">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-200">TV Shows</h2>
-
-             </div>
+        </div>
 
                 <div className="relative">
                   <span className="block h-1 w-16 bg-violet-700 rounded-full"></span>

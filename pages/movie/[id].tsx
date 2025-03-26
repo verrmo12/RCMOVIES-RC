@@ -71,7 +71,7 @@ export default function MoviePage(props: any) {
 
   const fetchMovieData = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}?&api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/movie/${id}?&api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       setData(res)
@@ -83,7 +83,7 @@ export default function MoviePage(props: any) {
 
   const fetchImdbId = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/external_ids?api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/movie/${id}/external_ids?api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       setImdbId(res.imdb_id)
@@ -95,7 +95,7 @@ export default function MoviePage(props: any) {
 
   const fetchRecommended = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       setRecommended(res.results)
@@ -107,7 +107,7 @@ export default function MoviePage(props: any) {
 
   const fetchCasts = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/credits?api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/movie/${id}/credits?api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       setCasts(res.cast)
@@ -119,7 +119,7 @@ export default function MoviePage(props: any) {
 
   const fetchTrailer = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=cfe422613b250f702980a3bbf9e90716`
+      const url = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=875cecec683eb9cfc4cb845ead32e16e`
       const req = await fetch(url)
       const res = await req.json()
       const trailer = res.results?.find((video: any) => video.type === "Trailer")
