@@ -1,6 +1,8 @@
 <div align="center">
-  <img src="public/images/rcmovies-logo.png" alt="RCMOVIES Logo" width="200" height="auto" />
-  <h1>🎬 RCMOVIES 🎬</h1>
+           <Link href="/" className="flex items-center gap-2">
+            <span className="text-violet-500 font-bold text-3xl">RC</span>
+            <span className=" text-white font-bold text-2xl">MOVIES</span>
+          </Link>
   <p>Your ultimate destination for movies and TV shows</p>
   
   [![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -45,6 +47,6 @@ RCMOVIES is a modern, feature-rich streaming platform that provides users with a
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/rcmovies.git
+   git clone https://github.com/verrmo12/rcmovies.git
    cd rcmovies
 
