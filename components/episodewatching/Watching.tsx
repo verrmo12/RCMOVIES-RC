@@ -28,7 +28,7 @@ function Watching(data : WatchingProps) {
   return (
     <div>
 
-    <iframe src={`https://www.2embed.to/embed/tmdb/tv?id=${data.tmdb_id}&s=${currentSeason}&e=${currentEp}`} className="w-full h-[800px] p-8"  />
+    <iframe src={`https://vidlink.pro/embed/tmdb/tv?id=${data.tmdb_id}&s=${currentSeason}&e=${currentEp}`} className="w-full h-[800px] p-8"  />
 
     <div className="flex p-2">
     <div>
