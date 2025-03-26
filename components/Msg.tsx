@@ -1,4 +1,4 @@
-"use client"
+
 import { CheckCircle, AlertCircle, Info } from "lucide-react"
 import { motion } from "framer-motion"
 
