@@ -17,7 +17,7 @@
 RCMOVIES is a modern, feature-rich streaming platform that provides users with a seamless experience to discover, explore, and enjoy their favorite movies and TV shows. Built with the latest web technologies, RCMOVIES offers a responsive, intuitive interface with powerful features like personalized watchlists, continue watching functionality, and comprehensive content details.
 
 <div align="center">
-  <img src="public/images/rcmovies-preview.png" alt="RCMOVIES Preview" width="100%" />
+  <img src="public/rcmovies-preview.png" alt="RCMOVIES Preview" width="100%" />
 </div>
 
 ## 🚀 Features

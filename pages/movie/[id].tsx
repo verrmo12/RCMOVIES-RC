@@ -1,13 +1,35 @@
+"use client"
+
 import { useRouter } from "next/router"
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSelector, useDispatch } from "react-redux"
 import { addToMyList, removeFromList } from "../../redux/actions/myListAction"
 import { SetContinueWatching } from "../../redux/actions/tvShowAction"
-import { Play, Plus, Minus, Youtube, Star, Clock, Calendar, ExternalLink } from "lucide-react"
+import {
+  Play,
+  Plus,
+  Minus,
+  Youtube,
+  Star,
+  Clock,
+  Calendar,
+  ExternalLink,
+  Share2,
+  Server,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Copy,
+  PhoneIcon as WhatsApp,
+  TextIcon as Telegram,
+  Mail,
+} from "lucide-react"
 import HomeContainer from "../../components/container/HomeContainer"
 import Layout from "../../components/layout/Layout"
 import CardModal from "../../components/container/CardModal"
+import { toast } from "react-toastify"
+import Msg from "../../components/Msg"
 
 // Subtitle data
 const subtitles = [
@@ -26,6 +48,12 @@ const subtitles = [
     url: "https://ccb.megaresources.co/56/26/5626ce43b9c4f3419805884cba4b0505/spa-4.vtt",
     lang: "Spanish - Spanish(Latin_America)",
   },
+]
+
+// Server options
+const serverOptions = [
+  { id: "server1", name: "Server 1", url: (id: string) => `https://vidlink.pro/movie/${id}` },
+  { id: "server2", name: "Server 2", url: (id: string) => `https://embed.su/embed/movie/${id}` },
 ]
 
 function timeConvert(n: any) {
@@ -48,6 +76,8 @@ export default function MoviePage(props: any) {
   const [showTrailer, setShowTrailer] = useState<boolean>(false)
   const [selected, setSelected] = useState(false)
   const [cardId, setCardId] = useState(null)
+  const [activeServer, setActiveServer] = useState("server1")
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const { MyList, ContinueWatching } = useSelector((state: any) => state)
   const [inMyList, setInMyList] = useState(false)
@@ -71,7 +101,7 @@ export default function MoviePage(props: any) {
 
   const fetchMovieData = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}?&api_key=875cecec683eb9cfc4cb845ead32e16e`
+      const url = `https://api.themoviedb.org/3/movie/${id}?&api_key=cfe422613b250f702980a3bbf9e90716`
       const req = await fetch(url)
       const res = await req.json()
       setData(res)
@@ -83,7 +113,7 @@ export default function MoviePage(props: any) {
 
   const fetchImdbId = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/external_ids?api_key=875cecec683eb9cfc4cb845ead32e16e`
+      const url = `https://api.themoviedb.org/3/movie/${id}/external_ids?api_key=cfe422613b250f702980a3bbf9e90716`
       const req = await fetch(url)
       const res = await req.json()
       setImdbId(res.imdb_id)
@@ -95,7 +125,7 @@ export default function MoviePage(props: any) {
 
   const fetchRecommended = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=875cecec683eb9cfc4cb845ead32e16e`
+      const url = `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=cfe422613b250f702980a3bbf9e90716`
       const req = await fetch(url)
       const res = await req.json()
       setRecommended(res.results)
@@ -107,7 +137,7 @@ export default function MoviePage(props: any) {
 
   const fetchCasts = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/credits?api_key=875cecec683eb9cfc4cb845ead32e16e`
+      const url = `https://api.themoviedb.org/3/movie/${id}/credits?api_key=cfe422613b250f702980a3bbf9e90716`
       const req = await fetch(url)
       const res = await req.json()
       setCasts(res.cast)
@@ -119,7 +149,7 @@ export default function MoviePage(props: any) {
 
   const fetchTrailer = async () => {
     try {
-      const url = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=875cecec683eb9cfc4cb845ead32e16e`
+      const url = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=cfe422613b250f702980a3bbf9e90716`
       const req = await fetch(url)
       const res = await req.json()
       const trailer = res.results?.find((video: any) => video.type === "Trailer")
@@ -179,6 +209,45 @@ export default function MoviePage(props: any) {
 
   const handleSimilar = () => {
     setSelected(false)
+  }
+
+  const handleServerChange = (serverId: string) => {
+    setActiveServer(serverId)
+  }
+
+  const handleShare = () => {
+    setShowShareModal(true)
+  }
+
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/movie/${id}`
+    navigator.clipboard.writeText(url)
+    toast.success(<Msg title="Link Copied" message="Movie link copied to clipboard" type="success" />, {
+      theme: "dark",
+    })
+    setShowShareModal(false)
+  }
+
+  const getShareUrl = (platform: string) => {
+    const url = encodeURIComponent(`${window.location.origin}/movie/${id}`)
+    const title = encodeURIComponent(`Watch ${data?.title} on RCMOVIES`)
+
+    switch (platform) {
+      case "facebook":
+        return `https://www.facebook.com/sharer/sharer.php?u=${url}`
+      case "twitter":
+        return `https://twitter.com/intent/tweet?url=${url}&text=${title}`
+      case "linkedin":
+        return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
+      case "whatsapp":
+        return `https://api.whatsapp.com/send?text=${title} ${url}`
+      case "telegram":
+        return `https://t.me/share/url?url=${url}&text=${title}`
+      case "email":
+        return `mailto:?subject=${title}&body=Check out this movie: ${url}`
+      default:
+        return "#"
+    }
   }
 
   return (
@@ -302,6 +371,14 @@ export default function MoviePage(props: any) {
                       )}
                     </button>
 
+                    <button
+                      onClick={handleShare}
+                      className="py-2 px-5 bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] text-white rounded-md font-medium flex items-center gap-2 transition-colors"
+                    >
+                      <Share2 size={18} />
+                      <span>Share</span>
+                    </button>
+
                     {imdbId && (
                       <a
                         href={`https://www.imdb.com/title/${imdbId}`}
@@ -345,19 +422,211 @@ export default function MoviePage(props: any) {
             )}
           </AnimatePresence>
 
+          {/* Share Modal */}
+          <AnimatePresence>
+            {showShareModal && (
+              <div
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setShowShareModal(false)}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="w-full max-w-md bg-[rgb(22,22,22)] rounded-lg overflow-hidden shadow-xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-white mb-4">Share "{data?.title}"</h3>
+
+                    <div className="grid grid-cols-4 gap-4 mb-6">
+                      <a
+                        href={getShareUrl("facebook")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#1877F2] flex items-center justify-center hover:opacity-90 transition-opacity">
+                          <Facebook size={24} className="text-white" />
+                        </div>
+                        <span className="text-gray-300 text-xs">Facebook</span>
+                      </a>
+
+                      <a
+                        href={getShareUrl("twitter")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#1DA1F2] flex items-center justify-center hover:opacity-90 transition-opacity">
+                          <Twitter size={24} className="text-white" />
+                        </div>
+                        <span className="text-gray-300 text-xs">Twitter</span>
+                      </a>
+
+                      <a
+                        href={getShareUrl("whatsapp")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#25D366] flex items-center justify-center hover:opacity-90 transition-opacity">
+                          <WhatsApp size={24} className="text-white" />
+                        </div>
+                        <span className="text-gray-300 text-xs">WhatsApp</span>
+                      </a>
+
+                      <a
+                        href={getShareUrl("telegram")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#0088cc] flex items-center justify-center hover:opacity-90 transition-opacity">
+                          <Telegram size={24} className="text-white" />
+                        </div>
+                        <span className="text-gray-300 text-xs">Telegram</span>
+                      </a>
+
+                      <a
+                        href={getShareUrl("linkedin")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#0A66C2] flex items-center justify-center hover:opacity-90 transition-opacity">
+                          <Linkedin size={24} className="text-white" />
+                        </div>
+                        <span className="text-gray-300 text-xs">LinkedIn</span>
+                      </a>
+
+                      <a
+                        href={getShareUrl("email")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#EA4335] flex items-center justify-center hover:opacity-90 transition-opacity">
+                          <Mail size={24} className="text-white" />
+                        </div>
+                        <span className="text-gray-300 text-xs">Email</span>
+                      </a>
+
+                      <button onClick={handleCopyLink} className="flex flex-col items-center gap-2">
+                        <div className="w-12 h-12 rounded-full bg-violet-700 flex items-center justify-center hover:bg-violet-600 transition-colors">
+                          <Copy size={24} className="text-white" />
+                        </div>
+                        <span className="text-gray-300 text-xs">Copy Link</span>
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => setShowShareModal(false)}
+                      className="w-full py-2 px-4 bg-[rgb(30,30,30)] hover:bg-[rgb(40,40,40)] text-white rounded-md transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
           {/* Player Section */}
           <div className="bg-[rgb(17,17,17)] py-12">
             <div className="container mx-auto px-6 md:px-10 lg:px-16">
               <h2 className="text-2xl font-bold text-white mb-6">Watch {data?.title}</h2>
 
               <div className="bg-[rgb(22,22,22)] rounded-lg p-2 md:p-4 shadow-lg">
-                <iframe
-                  ref={playerRef}
-                  onLoadCapture={handleIframe}
-                  className="w-full aspect-video rounded-md"
-                  src={`https://vidlink.pro/movie/${id}`}
-                  allowFullScreen
-                ></iframe>
+                {/* Server 1 */}
+                {activeServer === "server1" && (
+                  <iframe
+                    ref={playerRef}
+                    onLoadCapture={handleIframe}
+                    className="w-full aspect-video rounded-md"
+                    src={`https://vidlink.pro/movie/${id}`}
+                    allowFullScreen
+                  ></iframe>
+                )}
+
+                {/* Server 2 */}
+                {activeServer === "server2" && (
+                  <iframe
+                    ref={playerRef}
+                    onLoadCapture={handleIframe}
+                    className="w-full aspect-video rounded-md"
+                    src={`https://embed.su/embed/movie/${id}`}
+                    allowFullScreen
+                  ></iframe>
+                )}
+              </div>
+
+              {/* Server Selection */}
+              <div className="flex justify-center mt-4 mb-6">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {serverOptions.map((server) => (
+                    <button
+                      key={server.id}
+                      onClick={() => handleServerChange(server.id)}
+                      className={`py-2 px-4 rounded-md flex items-center gap-2 transition-colors ${
+                        activeServer === server.id
+                          ? "bg-violet-700 text-white"
+                          : "bg-[rgb(30,30,30)] text-gray-300 hover:bg-[rgb(40,40,40)]"
+                      }`}
+                    >
+                      <Server size={16} />
+                      <span>{server.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Share Section */}
+              <div className="mt-6 bg-[rgb(22,22,22)] rounded-lg p-4 shadow-lg">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-1">Enjoying the movie?</h3>
+                    <p className="text-gray-400 text-sm">Share it with your friends and family</p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <a
+                      href={getShareUrl("facebook")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center hover:opacity-90 transition-opacity"
+                    >
+                      <Facebook size={18} className="text-white" />
+                    </a>
+
+                    <a
+                      href={getShareUrl("twitter")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-[#1DA1F2] flex items-center justify-center hover:opacity-90 transition-opacity"
+                    >
+                      <Twitter size={18} className="text-white" />
+                    </a>
+
+                    <a
+                      href={getShareUrl("whatsapp")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center hover:opacity-90 transition-opacity"
+                    >
+                      <WhatsApp size={18} className="text-white" />
+                    </a>
+
+                    <button
+                      onClick={handleShare}
+                      className="py-2 px-4 bg-violet-700 hover:bg-violet-600 text-white rounded-md flex items-center gap-2 transition-colors"
+                    >
+                      <Share2 size={18} />
+                      <span className="hidden sm:inline">More Options</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

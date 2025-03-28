@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useRouter } from "next/navigation" // Updated to App Router
 import { useEffect, useState, useRef } from "react"

@@ -4,24 +4,13 @@ import { ChevronDown } from "lucide-react"
 interface NavbarItemProps {
   label: string
   icon?: React.ReactNode
-  active?: boolean
   hasDropdown?: boolean
   isOpen?: boolean
 }
 
-const NavbarItem: React.FC<NavbarItemProps> = ({
-  label,
-  icon,
-  active = false,
-  hasDropdown = false,
-  isOpen = false,
-}) => {
+const NavbarItem: React.FC<NavbarItemProps> = ({ label, icon, hasDropdown = false, isOpen = false }) => {
   return (
-    <div
-      className={`flex items-center gap-1.5 cursor-pointer text-sm font-medium transition-colors ${
-        active ? "text-white" : "text-gray-300 hover:text-white"
-      }`}
-    >
+    <div className="flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-300 hover:text-white transition-colors">
       {icon && <span className="opacity-80">{icon}</span>}
       <span>{label}</span>
       {hasDropdown && (

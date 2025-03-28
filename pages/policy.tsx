@@ -6,7 +6,6 @@ import Layout from "../components/layout/Layout"
 import Link from "next/link"
 import { useState } from "react"
 
-// Policy section component with collapsible content
 const PolicySection = ({
   title,
   icon,

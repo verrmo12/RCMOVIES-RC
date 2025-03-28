@@ -1,0 +1,2 @@
+movies url : "src={`https://vidsrc.pro/embed/movie/${id}`}"
+Tv shows url : "src={`https://vidsrc.pro/embed/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}"
