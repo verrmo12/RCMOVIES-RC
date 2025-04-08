@@ -18,7 +18,6 @@ interface HomeCardProps {
 
 function HomeCard(props: HomeCardProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const [imageError, setImageError] = useState(false)
 
   const isCast = props.heading === "Casts"
   const imagePath = isCast ? props.profile_path : props.poster_path
@@ -26,29 +25,16 @@ function HomeCard(props: HomeCardProps) {
   const year = props.release_date?.split("-")[0] || props.first_air_date?.split("-")[0]
   const role = props.character || props.job
 
-  // Function to handle image loading error
-  const handleImageError = () => {
-    setImageError(true)
-  }
-
-  // Get appropriate image URL with fallback
-  const getImageUrl = () => {
-    if (imageError || !imagePath) {
-      return "/no-image-placeholder.png" // Make sure this placeholder exists in your public folder
-    }
-    return `https://image.tmdb.org/t/p/w500${imagePath}`
-  }
-
   return (
     <div
       className="relative overflow-hidden rounded-lg transition-all duration-300"
       onMouseEnter={() => !isCast && setIsHovered(true)}
       onMouseLeave={() => !isCast && setIsHovered(false)}
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-[rgb(17,17,17)]">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-lg">
         {/* Image */}
         <Image
-          src={getImageUrl()}
+          src={imagePath ? `https://image.tmdb.org/t/p/w500/${imagePath}` : "/placeholder.svg?height=450&width=300"}
           alt={title}
           width={300}
           height={450}
@@ -56,9 +42,6 @@ function HomeCard(props: HomeCardProps) {
           style={{
             transform: isHovered ? "scale(1.05)" : "scale(1)",
           }}
-          onError={handleImageError}
-          priority={false}
-          loading="lazy"
         />
 
         {/* Overlay on hover - only for non-cast cards */}
