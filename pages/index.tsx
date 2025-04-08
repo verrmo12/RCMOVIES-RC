@@ -11,7 +11,7 @@ import Header from "../components/Header";
 
 export const getServerSideProps: GetServerSideProps = async () => {
 
-  let url = `https://api.themoviedb.org/3/discover/movie?vote_average.gte=7.8&with_original_language=en&without_genres=16&api_key=875cecec683eb9cfc4cb845ead32e16e`;
+  let url = `https://api.themoviedb.org/3/discover/movie?vote_average.gte=7.8&with_original_language=en&without_genres=16&api_key=cfe422613b250f702980a3bbf9e90716`;
   let req = await fetch(url);
   let res = await req.json();
 
@@ -51,7 +51,7 @@ const [dt,setDt] = useState()
 
 
   const topR = async () => {
-    let req  = await fetch(`https://api.themoviedb.org/3/${fetchRatedType}/top_rated?page=1&api_key=875cecec683eb9cfc4cb845ead32e16e`)
+    let req  = await fetch(`https://api.themoviedb.org/3/${fetchRatedType}/top_rated?page=1&api_key=cfe422613b250f702980a3bbf9e90716`)
     let res = await req.json()
     console.log(res)
     setTopRated(res.results)
@@ -64,7 +64,7 @@ const ComedyShows = async () => {
   setComedyShows(res.results)
 }
 const DramaShows = async () => {
-  let req  = await fetch(`https://api.themoviedb.org/4/discover/tv?vote_average.gte=7.5&with_original_language=en&with_genres=18&api_key=875cecec683eb9cfc4cb845ead32e16e`)
+  let req  = await fetch(`https://api.themoviedb.org/4/discover/tv?vote_average.gte=7.5&with_original_language=en&with_genres=18&api_key=cfe422613b250f702980a3bbf9e90716`)
   let res = await req.json()
   console.log(res)
   setDramaShows(res.results)
@@ -72,33 +72,33 @@ const DramaShows = async () => {
 }
 
   const fetchTrendingMovies = async () => {
-    let url = `https://api.themoviedb.org/3/trending/${fetchTrendingType}/week?api_key=875cecec683eb9cfc4cb845ead32e16e`;
+    let url = `https://api.themoviedb.org/3/trending/${fetchTrendingType}/week?api_key=cfe422613b250f702980a3bbf9e90716`;
     let req = await fetch(url);
     let res = await req.json();
     setTrendingMovies(res.results);
   };
   const fetchAnimesMovies = async () => {
-    let url = `https://api.themoviedb.org/3/discover/movie?api_key=875cecec683eb9cfc4cb845ead32e16e&language=en-US&page=1&with_genres=16&with_keywords=210024|287501`;
+    let url = `https://api.themoviedb.org/3/discover/movie?api_key=cfe422613b250f702980a3bbf9e90716&language=en-US&page=1&with_genres=16&with_keywords=210024|287501`;
     let req = await fetch(url);
     let res = await req.json();
     setAnimeMovies(res.results);
   };
 
   const fetchAnimeShows = async () => {
-    let url = `https://api.themoviedb.org/3/discover/tv?api_key=875cecec683eb9cfc4cb845ead32e16e&language=en-US&page=1&with_genres=16&with_keywords=210024|287501`;
+    let url = `https://api.themoviedb.org/3/discover/tv?api_key=cfe422613b250f702980a3bbf9e90716&language=en-US&page=1&with_genres=16&with_keywords=210024|287501`;
     let req = await fetch(url);
     let res = await req.json();
     setAnimeShows(res.results);
   };
   const fetchPopularMovies = async () => {
-    let url = `https://api.themoviedb.org/3/${fetchPopularType}/popular?api_key=875cecec683eb9cfc4cb845ead32e16e`;
+    let url = `https://api.themoviedb.org/3/${fetchPopularType}/popular?api_key=cfe422613b250f702980a3bbf9e90716`;
     let req = await fetch(url);
     let res = await req.json();
     setPopularMovies(res.results);
   };
 
   const fetchLatestMovies = async () => {
-    let url = `https://api.themoviedb.org/3/movie/upcoming?api_key=875cecec683eb9cfc4cb845ead32e16e`;
+    let url = `https://api.themoviedb.org/3/movie/upcoming?api_key=cfe422613b250f702980a3bbf9e90716`;
     let req = await fetch(url);
     let res = await req.json();
     setLatestMovies(res.results);

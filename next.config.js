@@ -5,3 +5,11 @@ module.exports = {
     domains : ['image.tmdb.org','upload.wikimedia.org'],
   }
 }
+
+// next.config.js
+module.exports = {
+  images: {
+    domains: ['image.tmdb.org'],
+    unoptimized: true,
+  },
+}

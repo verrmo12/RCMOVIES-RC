@@ -13,7 +13,7 @@ function MyList() {
   }, [])
 
   const fetchData = async () => {
-    const url = `https://api.themoviedb.org/3/trending/tv/week?api_key=875cecec683eb9cfc4cb845ead32e16e`
+    const url = `https://api.themoviedb.org/3/trending/tv/week?api_key=cfe422613b250f702980a3bbf9e90716`
     const req = await fetch(url)
     const res = await req.json()
     setData(res.results)
