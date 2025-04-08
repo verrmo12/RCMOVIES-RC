@@ -36,7 +36,7 @@ function HomeCard(props: HomeCardProps) {
       <div className="relative aspect-[2/3] overflow-hidden rounded-lg">
         {/* Image */}
         <Image
-          src={imagePath ? `https://image.tmdb.org/t/p/w300${imagePath}` : "/placeholder.svg?height=450&width=300"}
+          src={imagePath ? `https://image.tmdb.org/t/p/w500${imagePath}` : "/placeholder.svg?height=450&width=300"}
           alt={title}
           width={300}
           height={450}
