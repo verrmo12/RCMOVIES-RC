@@ -3,13 +3,7 @@ module.exports = {
   reactStrictMode: false,
   images : {
     domains : ['image.tmdb.org','upload.wikimedia.org'],
+    unoptimized: true,
   }
 }
 
-// next.config.js
-module.exports = {
-  images: {
-    domains: ['image.tmdb.org'],
-    unoptimized: true,
-  },
-}
