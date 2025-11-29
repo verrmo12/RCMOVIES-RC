@@ -38,12 +38,12 @@ const serverOptions = [
   {
     id: "server1",
     name: "Server 1",
-    url: (id: string, season: number, episode: number) => `https://vidlink.pro/tv/${id}/${season}/${episode}`,
+    url: (id: string, season: number, episode: number) => `https://fmovies4u.com/embed/tmdb-tv-${id}/${season}/${episode}`,
   },
   {
     id: "server2",
     name: "Server 2",
-    url: (id: string, season: number, episode: number) => `https://embed.su/embed/tv/${id}/${season}/${episode}`,
+      url: (id: string, season: number, episode: number) => `https://fmovies4u.in/embed/tmdb-tv-${id}/${season}/${episode}`,
   },
 ]
 
@@ -657,7 +657,7 @@ export default function TvShowPage(props: any) {
                     ref={playerRef}
                     onLoadCapture={handleIframe}
                     className="w-full aspect-video rounded-md"
-                    src={`https://vidlink.pro/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+                    src={`https://fmovies4u.com/embed/tmdb-tv-${id}/${dataState?.season}/${dataState?.ep_num}`}
                     allowFullScreen
                   ></iframe>
                 )}
@@ -668,7 +668,7 @@ export default function TvShowPage(props: any) {
                     ref={playerRef}
                     onLoadCapture={handleIframe}
                     className="w-full aspect-video rounded-md"
-                    src={`https://embed.su/embed/tv/${id}/${dataState?.season}/${dataState?.ep_num}`}
+                    src={`https://fmovies4u.in/embed/tmdb-tv-${id}/${dataState?.season}/${dataState?.ep_num}`}
                     allowFullScreen
                   ></iframe>
                 )}

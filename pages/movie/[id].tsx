@@ -52,8 +52,8 @@ const subtitles = [
 
 // Server options
 const serverOptions = [
-  { id: "server1", name: "Server 1", url: (id: string) => `https://vidlink.pro/movie/${id}` },
-  { id: "server2", name: "Server 2", url: (id: string) => `https://embed.su/embed/movie/${id}` },
+  { id: "server1", name: "Server 1", url: (id: string) => `https://fmovies4u.com/embed/tmdb-movie-${id}` },
+  { id: "server2", name: "Server 2", url: (id: string) => `https://fmovies4u.in/embed/tmdb-movie-${id}` },
 ]
 
 function timeConvert(n: any) {
@@ -545,7 +545,7 @@ export default function MoviePage(props: any) {
                     ref={playerRef}
                     onLoadCapture={handleIframe}
                     className="w-full aspect-video rounded-md"
-                    src={`https://vidlink.pro/movie/${id}`}
+                    src={`https://fmovies4u.com/embed/tmdb-movie-${id}`}
                     allowFullScreen
                   ></iframe>
                 )}
@@ -556,7 +556,7 @@ export default function MoviePage(props: any) {
                     ref={playerRef}
                     onLoadCapture={handleIframe}
                     className="w-full aspect-video rounded-md"
-                    src={`https://embed.su/embed/movie/${id}`}
+                    src={`https://fmovies4u.io/embed/tmdb-movie-${id}`}
                     allowFullScreen
                   ></iframe>
                 )}
